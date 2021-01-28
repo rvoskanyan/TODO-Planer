@@ -2,11 +2,11 @@
   "name": "TODO-Planner",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/js/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "start": "webpack server"
+    "watch": "webpack --watch",
+    "start": "webpack-dev-server --open"
   },
   "repository": {
     "type": "git",

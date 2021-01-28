@@ -1,26 +1,39 @@
+//basic vars
 const path = require('path')
-const {CleanWebpackPlugin} = require('clean-webpack-plugin')
 const webpack = require('webpack')
 
+//additional plugins
+const {CleanWebpackPlugin} = require('clean-webpack-plugin')
+
+//module settings
 module.exports = {
+    //бызовый путь к проекту
+    context: path.resolve(__dirname, 'src'),
+
     mode: 'development',
 
-    devServer: {
-        historyApiFallback: true,
-        contentBase: path.resolve(__dirname, './dist'),
-        open: true,
-        compress, true,
-        hot: true,
-        port: 8080
-    },
-
+    //точки входа js
     entry: {
-        index: path.resolve(__dirname, './src/index.js')
+        app: [
+            './js/app.js'
+        ]
     },
 
+    //путь для собранных файлов
     output: {
         path: path.resolve(__dirname, './dist'),
-        filename: '[name].bundle.js'
+        filename: 'js/[name].js',
+        publicPath: "../"
+    },
+
+    //devServer configuration
+    devServer: {
+        contentBase: './app',
+        historyApiFallback: true,
+        open: true,
+        compress: true,
+        hot: true,
+        port: 8080
     },
 
     plugins: [
