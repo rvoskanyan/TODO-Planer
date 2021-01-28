@@ -5,6 +5,8 @@ const webpack = require('webpack')
 //additional plugins
 const {CleanWebpackPlugin} = require('clean-webpack-plugin')
 
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 //module settings
 module.exports = {
     //бызовый путь к проекту
@@ -23,7 +25,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './dist'),
         filename: 'js/[name].js',
-        publicPath: "../"
+        publicPath: "/"
     },
 
     //devServer configuration
@@ -38,7 +40,10 @@ module.exports = {
 
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin(),
+        new HtmlWebpackPlugin({
+            template: path.resolve(__dirname, "./public/index.html")
+        })
     ],
 
     module: {
