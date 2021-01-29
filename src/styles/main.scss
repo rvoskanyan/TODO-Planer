@@ -1,5 +1,16 @@
-$font-size: 1rem;
-$font-color: #1f8447;
+@import "./variables.scss";
+
+@font-face {
+  font-family: 'fontello';
+  src: url('../fonts/fontello.eot?25074748');
+  src: url('../fonts/fontello.eot?25074748#iefix') format('embedded-opentype'),
+  url('../fonts/fontello.woff2?25074748') format('woff2'),
+  url('../fonts/fontello.woff?25074748') format('woff'),
+  url('../fonts/fontello.ttf?25074748') format('truetype'),
+  url('../fonts/fontello.svg?25074748#fontello') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
 
 html {
   background-color: $font-color;
@@ -63,7 +74,7 @@ body {
   }
 }
 
-.inputWrapper {
+.input-wrapper {
   padding: 10px 15px;
   box-sizing: border-box;
   display: flex;
@@ -82,7 +93,7 @@ body {
   }
 }
 
-.itemContent {
+.item-content {
   border-bottom: 2px dashed #cfc4c4;
 
   &__input {
@@ -90,6 +101,71 @@ body {
   }
 }
 
-.itemContent:not(:first-child) {
+.item-content:not(:first-child) {
   margin-top: 10px;
 }
+
+.control {
+  background-color: #fff;
+  margin-top: 15px;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+
+  &__button {
+    width: 50px;
+    height: 50px;
+    border-radius: 100%;
+    cursor: pointer;
+    outline: none;
+
+    &_move {
+      background-color: #317cc8!important;
+    }
+
+    &_contents {
+      background-color: #6f7e8d!important;
+    }
+
+    &_add {
+      background-color: #26952e!important;
+    }
+
+    &_delete {
+      background-color: #b21919!important;
+    }
+  }
+}
+
+.button {
+  background: none;
+  border: none;
+}
+
+.icon:before {
+  font-family: "fontello";
+  font-style: normal;
+  font-weight: normal;
+  speak: never;
+
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  margin-right: .2em;
+  text-align: center;
+
+  font-variant: normal;
+  text-transform: none;
+
+  line-height: 1em;
+  margin-left: .2em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-arrow_left-24px:before { content: '\e800'; }
+.icon-arrow_right-24px:before { content: '\e801'; }
+.icon-content_paste-24px:before { content: '\e802'; }
+.icon-remove_circle_outline-24px:before { content: '\e803'; }
+.icon-add_circle_outline-24px:before { content: '\e804'; }

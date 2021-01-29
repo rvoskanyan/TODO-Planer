@@ -4,7 +4,9 @@ const webpack = require('webpack')
 
 //additional plugins
 const {CleanWebpackPlugin} = require('clean-webpack-plugin')
-
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const ImageminPlugin = require('imagemin-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 //module settings
@@ -59,7 +61,14 @@ module.exports = {
             },
             {
                 test: /\.(woff(2)?|eot|ttf|otf|svg|)$/,
-                type: 'asset/inline',
+                use: [
+                    {
+                        loader: "file-loader",
+                        options: {
+                            name: '[path][name].[ext]'
+                        }
+                    }
+                ],
             },
             {
                 test: /\.(scss|css)$/,
