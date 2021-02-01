@@ -1,13 +1,20 @@
 import '../styles/main.scss'
-import TodoListClass from './TodoListClass'
-import {SECTION} from "./const";
+import TodoList from './TodoList'
+import {APP} from "./const";
 
-if(!localStorage.getItem(SECTION)) {
-    localStorage.setItem(SECTION, 'listTaskId=1')
+if(/*!localStorage.getItem(APP)*/true) {
+    localStorage.setItem(APP, JSON.stringify({
+        date: new Date(),
+        tasks: [
+            {text: 'test1', status: 0},
+            {text: 'test2', status: 0},
+            {text: 'test3', status: 0},
+            {text: 'test4', status: 0},
+            {text: 'test5', status: 0}
+        ]
+    }))
 }
 
-const page = localStorage.getItem(SECTION);
+const state = JSON.parse(localStorage.getItem(APP));
 
-const todoList = new TodoListClass(page);
-
-todoList.loadPage();
+const todoList = new TodoList(state);
