@@ -44,7 +44,7 @@ module.exports = {
         new webpack.HotModuleReplacementPlugin(),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            template: path.resolve(__dirname, "./public/index.html")
+            template: path.resolve(__dirname, "./src/index.html")
         })
     ],
 
@@ -53,7 +53,13 @@ module.exports = {
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                use: ['babel-loader']
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'],
+                        plugins: ['@babel/plugin-proposal-class-properties']
+                    }
+                }
             },
             {
                 test: /\.(?:ico|gif|png|jpg|jpeg)$/i,
