@@ -1,23 +1,56 @@
-import {nodeElements} from "./const";
-
 export default class Task {
 
-    constructor(task) {
+    constructor(task, toggleStatus) {
         this.task = task;
-        this.renderTask();
+        this.id = task.id;
+        this.edit = false;
+        this.toggleStatus = toggleStatus;
     }
 
-    renderTask() {
-        console.log(this.task);
-        const container = document.getElementById(nodeElements.container);
-        let div = document.createElement('div');
+    getNode() {
+        const div = document.createElement('div');
         div.className = 'item-content';
-        let input = document.createElement('input');
+
+        const input = document.createElement(this.edit ? 'input' : 'div');
         input.type = 'text';
         input.classList.add("item-content__input", "input");
-        input.value = this.task.text;
+        this.task.status === 1 ? input.classList.add('item-content__input_delete') : '';
+        if(this.edit) {
+            input.value = this.task.text;
+        }
+        else {
+            input.innerText = this.task.text;
+        }
+        input.onmousedown = this.handleClickTask;
+        input.id = `task${this.id}`;
+
+        const divControls = document.createElement('div');
+        divControls.classList.add("content__control", "inner-control");
+
+        const buttonEdit = document.createElement('button');
+        buttonEdit.classList.add("inner-control__button", "button");
+
+        const iconEdit = document.createElement('i');
+        iconEdit.classList.add("icon", "icon-pencil");
+
+        const buttonDelete = document.createElement('button');
+        buttonDelete.classList.add("inner-control__button", "button");
+
+        const iconDelete = document.createElement('i');
+        iconDelete.classList.add("icon", "icon-trash");
+
+        buttonEdit.append(iconEdit);
+        buttonDelete.append(iconDelete);
+        divControls.append(buttonEdit);
+        divControls.append(buttonDelete);
         div.prepend(input);
-        container.append(div);
+        div.append(divControls);
+
+        return div;
     }
 
+    handleClickTask() {
+        console.log(this.id);
+        this.toggleStatus(this.id);
+    }
 }

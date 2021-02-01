@@ -7,9 +7,6 @@
 <body>
 <div class="container">
     <div class="container__when when" id="timeDate">
-        <div class="when__time input-wrapper">
-            <input type="time" class="input">
-        </div>
         <div class="when__date input-wrapper">
             <input type="date" class="input">
         </div>
@@ -23,14 +20,26 @@
             <div class="separator__item"></div>
             <div class="separator__item"></div>
         </div>
-        <div class="list__content" id="mainContent"></div>
+        <div class="list__content" id="mainContent">
+            <div class="item-content">
+                <input type="text" class="item-content__input input" id="task1">
+                <div class="content__control inner-control">
+                    <button class="inner-control__button button">
+                        <i class="icon icon-pencil"></i>
+                    </button>
+                    <button class="inner-control__button button">
+                        <i class="icon icon-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="container__control control">
-        <button class="control__button control__button_move button"><i class="icon icon-arrow_left-24px"></i></button>
-        <button class="control__button control__button_contents button"><i class="icon icon-content_paste-24px"></i></button>
-        <button class="control__button control__button_add button"><i class="icon icon-add_circle_outline-24px"></i></button>
-        <button class="control__button control__button_delete button"><i class="icon icon-remove_circle_outline-24px"></i></button>
-        <button class="control__button control__button_move button"><i class="icon icon-arrow_right-24px"></i></button>
+        <button class="control__button control__button_move button"><i class="icon icon-left-open"></i></button>
+        <button class="control__button control__button_contents button"><i class="icon icon-pencil"></i></button>
+        <button class="control__button control__button_add button"><i class="icon icon-list-add"></i></button>
+        <button class="control__button control__button_delete button"><i class="icon icon-trash"></i></button>
+        <button class="control__button control__button_move button"><i class="icon icon-right-open"></i></button>
     </div>
 </div>
 </body>
