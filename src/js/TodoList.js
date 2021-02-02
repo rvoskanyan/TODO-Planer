@@ -4,6 +4,7 @@ import {lsKeyApp, nodeElements} from "./constants";
 export default class TodoList {
 
     examplesTasks = [];
+    nodesTasks = [];
 
     constructor(state) {
         this.date = state?.date;
@@ -15,7 +16,12 @@ export default class TodoList {
     createTasks() {
         if(this.tasks.length) {
             for(let elem of this.tasks) {
-                this.examplesTasks.push(new Task(elem, this.toggleStatus));
+                this.examplesTasks.push(new Task(
+                    elem,
+                    this.toggleStatus.bind(this),
+                    this.deleteTask.bind(this),
+                    this.saveChangeTask.bind(this)
+                ));
             }
         }
     }
@@ -23,7 +29,9 @@ export default class TodoList {
     renderList() {
         if(this.examplesTasks.length) {
             for(let elem of this.examplesTasks) {
-                document.getElementById(nodeElements.container).append(elem.getNode());
+                const node = elem.getNode();
+                this.nodesTasks.push(node);
+                document.getElementById(nodeElements.container).append(node);
             }
         }
         else {
@@ -33,6 +41,52 @@ export default class TodoList {
 
     toggleStatus(id) {
         document.getElementById(`${nodeElements.prefixIdTask}${id}`).classList.toggle("item-content__input_delete");
+        const index = this.tasks.findIndex(item => {
+            return item.id === id;
+        });
+        this.tasks[index].status = this.tasks[index].status === 0 ? 1 : 0;
+        localStorage.setItem(lsKeyApp, JSON.stringify({
+            date: this.date,
+            tasks: this.tasks
+        }))
+    }
+
+    deleteTask(id) {
+        const index = this.tasks.findIndex(item => {
+            return item.id === id;
+        });
+        this.tasks.splice(index, 1);
+        this.nodesTasks[index].remove();
+        this.nodesTasks.splice(index, 1);
+        localStorage.setItem(lsKeyApp, JSON.stringify({
+            date: this.date,
+            tasks: this.tasks
+        }))
+    }
+
+    saveChangeTask(id) {
+        const index = this.tasks.findIndex(item => {
+            return item.id === id;
+        });
+        const newValue = document.getElementById(`${nodeElements.prefixIdTask}${id}`).value;
+        const oldValue = this.tasks[index].text;
+
+        if(oldValue === newValue) {
+            return this.tasks[index];
+        }
+
+        this.tasks[index] = {
+            ...this.tasks[index],
+            text: newValue,
+            status: 0
+        }
+
+        localStorage.setItem(lsKeyApp, JSON.stringify({
+            date: this.date,
+            tasks: this.tasks
+        }))
+
+        return this.tasks[index];
     }
 
     addTask(task) {

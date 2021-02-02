@@ -2,7 +2,7 @@ import '../styles/main.scss'
 import TodoList from './TodoList'
 import {lsKeyApp} from "./constants";
 
-if(/*!localStorage.getItem(lsKeyApp)*/true) {
+/*if(/!*!localStorage.getItem(lsKeyApp)*!/true) {
     localStorage.setItem(lsKeyApp, JSON.stringify({
         date: new Date(),
         tasks: [
@@ -13,7 +13,7 @@ if(/*!localStorage.getItem(lsKeyApp)*/true) {
             {id: 5, text: 'test5', status: 0}
         ]
     }))
-}
+}*/
 
 const state = JSON.parse(localStorage.getItem(lsKeyApp));
 
