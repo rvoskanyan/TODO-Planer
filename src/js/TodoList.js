@@ -6,10 +6,19 @@ export default class TodoList {
     examplesTasks = [];
     nodesTasks = [];
 
-    constructor(state) {
-        this.date = state?.date;
-        this.tasks = state?.tasks;
-        this.nextId = state?.nextId;
+    constructor(state, node, lsControl) {
+        this.node = node;
+        this.lsControl = lsControl;
+
+        this.setState({
+            ...this.state,
+            date: state.date,
+            tasks: state.tasks,
+        })
+    }
+
+    setState(newState) {
+        this.state = newState;
         this.createTasks();
         this.renderList();
     }
@@ -17,10 +26,11 @@ export default class TodoList {
     createTasks() {
         this.examplesTasks = [];
 
-        if(this.tasks.length) {
-            for(let elem of this.tasks) {
+        if(this.state.tasks.length) {
+            for(let elem of this.state.tasks) {
                 this.examplesTasks.push(new Task(
                     elem,
+                    this.node,
                     this.toggleStatus.bind(this),
                     this.deleteTask.bind(this),
                     this.saveChangeTask.bind(this)
@@ -34,18 +44,24 @@ export default class TodoList {
 
         if(this.examplesTasks.length) {
 
-            const newContainer = document.createElement('div');
-            newContainer.className = 'list__content';
-            newContainer.id = nodeElements.container;
+            const wrapper = this.node.querySelector('.wrapper');
+
+            const newWrapper = document.createElement('div');
+            newWrapper.classList.add('list__content', 'wrapper');
 
             for(let elem of this.examplesTasks) {
                 const node = elem.getNode();
+                if(elem.edit) elem.setFocus(node);
 
-                newContainer.append(node);
+                newWrapper.append(node);
                 this.nodesTasks.push(node);
             }
 
-            document.getElementById(nodeElements.container).replaceWith(newContainer);
+            if(wrapper) {
+                return wrapper.replaceWith(newWrapper);
+            }
+
+            this.node.append(newWrapper);
         }
         else {
             console.log('Задачи не найдены!')
@@ -53,16 +69,14 @@ export default class TodoList {
     }
 
     toggleStatus(id) {
-        const index = this.tasks.findIndex(item => {
-            return item.id === id;
-        });
+        const index = this.state.tasks.findIndex(item => item.id === id);
 
-        document.getElementById(`${nodeElements.prefixIdTask}${id}`).classList.toggle("item-content__input_delete");
+        this.node.querySelector(`#${nodeElements.prefixIdTask}${id}`).classList.toggle("item-content__input_delete");
 
-        this.tasks[index].status = this.tasks[index].status === 0 ? 1 : 0;
+        this.state.tasks[index].status = this.state.tasks[index].status === 0 ? 1 : 0;
         localStorage.setItem(lsKeyApp, JSON.stringify({
-            date: this.date,
-            tasks: this.tasks
+            date: this.state.date,
+            tasks: this.state.tasks
         }))
     }
 
@@ -83,7 +97,7 @@ export default class TodoList {
         const index = this.tasks.findIndex(item => {
             return item.id === id;
         });
-        const newValue = document.getElementById(`${nodeElements.prefixIdTask}${id}`).value;
+        const newValue = this.node.querySelector(`#${nodeElements.prefixIdTask}${id}`).value;
         const oldValue = this.tasks[index].text;
 
         if(oldValue === newValue) {
@@ -105,23 +119,19 @@ export default class TodoList {
     }
 
     addTask() {
-        const div = document.createElement('div');
-        div.className = 'item-content';
+        const newTasks = [...this.state.tasks];
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.classList.add("item-content__input", "input");
-        input.addEventListener('blur', () => this.handleBlurNewTask(div, input));
+        newTasks.push({
+            id: undefined,
+            text: '',
+            status: 0,
+            edit: true
+        })
 
-        const divControls = document.createElement('div');
-        divControls.classList.add("content__control", "inner-control");
-
-        div.prepend(input);
-        div.append(divControls);
-
-        document.getElementById(nodeElements.container).append(div);
-
-        input.focus();
+        this.setState({
+            ...this.state,
+            tasks: newTasks
+        });
     }
 
     handleBlurNewTask(node, field) {
