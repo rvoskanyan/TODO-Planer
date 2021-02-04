@@ -2,6 +2,13 @@ import {lsKeyApp} from "./constants";
 
 export default class LsControl {
 
+    constructor() {
+        const state = this.getCurrentState();
+        this.tasks = state.tasks;
+        this.data = state.data;
+        this.nextId = state.nextId;
+    }
+
     getCurrentState() {
         return this.parseState(localStorage.getItem(lsKeyApp), 'from');
     }
@@ -21,8 +28,12 @@ export default class LsControl {
         return state;
     }
 
-    getNextId() {
+    updateLs(ls) {
 
+    }
+
+    getNextId() {
+        return this.nextId;
     }
 
     getListTasks() {
@@ -37,8 +48,28 @@ export default class LsControl {
 
     }
 
-    addTask() {
+    addTask(task) {
+        const newTask = {
+            ...task,
+            id: this.nextId,
+        }
 
+        this.tasks.push(newTask);
+        this.nextId++;
+
+        console.log({
+            data: this.data,
+            tasks: this.tasks,
+            nextId: this.nextId
+        })
+
+        this.updateLs(this.parseState({
+            data: this.data,
+            tasks: this.tasks,
+            nextId: this.nextId
+        }, 'to'))
+
+        return newTask.id;
     }
 
     deleteTask() {

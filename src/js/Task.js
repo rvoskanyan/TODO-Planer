@@ -57,19 +57,21 @@ export default class Task {
         } else {
             input.value = this.text;
             input.type = 'text';
+            input.addEventListener('blur', () => {
+                this.handleBlur(input);
+            });
         }
         input.id = `${nodeElements.prefixIdTask}${this.id}`;
 
         div.prepend(input);
         div.append(divControls);
 
+        this.node = div;
         return div;
     }
 
-    setFocus(node) {
-        console.log('focus');
-        console.log(node.querySelector('input'));
-        node.querySelector('input').focus();
+    setFocus() {
+        this.node.querySelector('input').focus();
     }
 
     handleClickTask() {
@@ -92,8 +94,13 @@ export default class Task {
         this.parentNode.querySelector(`#${nodeElements.prefixIdTask}${this.id}`).focus();
     }
 
-    handleBlur() {
-        this.task = this.saveChangeTask(this.id);
+    handleBlur(node) {
+        const text = node.value;
+        this.saveChangeTask({
+            id: this.id,
+            text: text
+        });
+        return;
 
         const input = document.createElement('div');
         input.classList.add("item-content__input", "input");

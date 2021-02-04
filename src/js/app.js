@@ -8,6 +8,8 @@ const lsControl = new LsControl();
 
 if(!lsControl.getCurrentState()) lsControl.initialStartState();
 
+//lsControl.initialStartState();
+
 const arrayInitElements = document.querySelectorAll('.todo-list-init');
 
 const state = lsControl.getListTasks();
@@ -27,7 +29,9 @@ for(let node of arrayInitElements) {
         '            <div class="separator__item"></div>\n' +
         '            <div class="separator__item"></div>\n' +
         '        </div>\n' +
-        '        <div class="todo-list-init-content"></div>\n' +
+        '        <div class="todo-list-init-content">' +
+        '           <div class="list__content wrapper"></div>' +
+        '        </div>\n' +
         '    </div>\n' +
         '    <div class="container__control control">\n' +
         '        <button class="control__button control__button_move button"><i class="icon icon-left-open"></i></button>\n' +
