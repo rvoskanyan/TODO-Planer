@@ -5,14 +5,8 @@ import "../styles/main.scss"
 import {lsKeyApp} from "./constants";
 
 const lsControl = new LsControl();
-
-if(!lsControl.getCurrentState()) lsControl.initialStartState();
-
-//lsControl.initialStartState();
-
 const arrayInitElements = document.querySelectorAll('.todo-list-init');
-
-const state = lsControl.getListTasks();
+const tasks = lsControl.getListTasks();
 
 for(let node of arrayInitElements) {
     node.innerHTML = '<div class="container__when when" id="timeDate">\n' +
@@ -39,7 +33,7 @@ for(let node of arrayInitElements) {
         '        <button class="control__button control__button_move button"><i class="icon icon-right-open"></i></button>\n' +
         '    </div>';
 
-    const todoList = new TodoList(state, node.querySelector('.todo-list-init-content'), lsControl);
+    const todoList = new TodoList({tasks}, node.querySelector('.todo-list-init-content'), lsControl);
 
     node.querySelector('.todo-list-init-content-add-button').addEventListener('click', todoList.addTask.bind(todoList));
 }

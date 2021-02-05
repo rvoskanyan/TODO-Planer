@@ -9,26 +9,17 @@ export default class TodoList {
     constructor(state, node, lsControl) {
         this.node = node;
         this.lsControl = lsControl;
-
-        this.setState({
-            ...this.state,
-            date: state.date,
-            tasks: state.tasks,
-        })
+        this.tasks = state.tasks;
 
         this.createTasks();
         this.renderList();
     }
 
-    setState(newState) {
-        this.state = newState;
-    }
-
     createTasks() {
         this.examplesTasks = [];
 
-        if(this.state.tasks.length) {
-            for(let elem of this.state.tasks) {
+        if(this.tasks.length) {
+            for(let elem of this.tasks) {
                 this.examplesTasks.push(new Task(
                     elem,
                     this.node,
@@ -50,15 +41,11 @@ export default class TodoList {
             const newWrapper = document.createElement('div');
             newWrapper.classList.add('list__content', 'wrapper');
 
-            if(wrapper) {
-                return wrapper.replaceWith(newWrapper);
-            }
-
-            this.node.append(newWrapper);
+            wrapper ? wrapper.replaceWith(newWrapper) : this.node.append(newWrapper);
 
             for(let elem of this.examplesTasks) {
                 const taskNode = elem.getNode();
-                if(elem.edit) elem.setFocus(taskNode);
+                if(elem.edit) elem.setFocus();
 
                 this.appendNodeTask(taskNode);
                 this.nodesTasks.push(taskNode);
@@ -83,16 +70,49 @@ export default class TodoList {
         this.node.append(newWrapper);
     }
 
+    addTask() {
+        const newTask = {
+            id: undefined,
+            text: '',
+            done: false,
+            edit: true
+        }
+        const newTasks = [...this.tasks];
+
+        newTasks.push(newTask);
+
+        this.tasks = newTasks;
+
+        const newTaskExample = new Task(
+            newTask,
+            this.node,
+            this.toggleStatus.bind(this),
+            this.deleteTask.bind(this),
+            this.saveChangeTask.bind(this)
+        )
+
+        this.examplesTasks.push(newTaskExample);
+
+        const taskNode = newTaskExample.getNode();
+        this.nodesTasks.push(taskNode);
+
+        this.appendNodeTask(taskNode);
+        newTaskExample.setFocus();
+    }
+
     toggleStatus(id) {
-        const index = this.state.tasks.findIndex(item => item.id === id);
+        const index = this.tasks.findIndex(item => item.id === id);
+        const examplesCurrentTask = this.examplesTasks[index];
+        const dataCurrentTask = this.tasks[index];
 
-        this.node.querySelector(`#${nodeElements.prefixIdTask}${id}`).classList.toggle("item-content__input_delete");
+        dataCurrentTask.done = !dataCurrentTask.done;
+        examplesCurrentTask.done = dataCurrentTask.done;
+        examplesCurrentTask.toggleClassStatus();
 
-        this.state.tasks[index].status = this.state.tasks[index].status === 0 ? 1 : 0;
-        localStorage.setItem(lsKeyApp, JSON.stringify({
-            date: this.state.date,
-            tasks: this.state.tasks
-        }))
+        this.lsControl.editTask({
+            id,
+            done: dataCurrentTask.done
+        });
     }
 
     deleteTask(id) {
@@ -109,7 +129,7 @@ export default class TodoList {
     }
 
     saveChangeTask(task) {
-        if(!task.id && !this.state.tasks[this.state.tasks.length - 1].id) {
+        if(!task.id && !this.tasks[this.tasks.length - 1].id) {
             if(task.text === '') {
                 this.nodesTasks[this.nodesTasks.length - 1].remove();
                 delete this.examplesTasks[this.examplesTasks.length - 1];
@@ -119,21 +139,30 @@ export default class TodoList {
                 return;
             }
 
-            console.log('add');
             const idNewTask = this.lsControl.addTask({
                 text: task.text,
-                status: 0,
+                done: false,
             });
 
-            this.state.tasks[this.state.tasks.length - 1].id = idNewTask;
-            this.examplesTasks[this.examplesTasks.length - 1].id = idNewTask;
+            this.tasks[this.tasks.length - 1].id = idNewTask;
+            this.examplesTasks[this.examplesTasks.length - 1].updateDataTask({
+                id: idNewTask,
+                text: task.text,
+                done: false,
+                edit: false
+            })
+
+            const newNodeTask = this.examplesTasks[this.examplesTasks.length - 1].getNode();
+
+            this.nodesTasks[this.nodesTasks.length - 1].replaceWith(newNodeTask);
+            this.nodesTasks[this.nodesTasks.length - 1] = newNodeTask;
 
             return;
         }
 
-        const index = this.state.tasks.findIndex(item => item.id === task.id);
+        const index = this.tasks.findIndex(item => item.id === task.id);
         const newValue = task.text;
-        const oldValue = this.state.tasks[index].text;
+        const oldValue = this.tasks[index].text;
 
         if(oldValue === newValue) {
             return this.tasks[index];
@@ -151,64 +180,5 @@ export default class TodoList {
         }))
 
         return this.tasks[index];
-    }
-
-    addTask() {
-        const newTasks = [...this.state.tasks];
-        newTasks.push({
-            id: undefined,
-            text: '',
-            status: 0,
-            edit: true
-        });
-
-        const newState = {
-            ...this.state,
-            tasks: newTasks
-        }
-
-        this.setState(newState);
-
-        const newTask = new Task(
-            {
-                id: undefined,
-                text: '',
-                status: 0,
-                edit: true
-            },
-            this.node,
-            this.toggleStatus.bind(this),
-            this.deleteTask.bind(this),
-            this.saveChangeTask.bind(this)
-        )
-
-        this.examplesTasks.push(newTasks);
-
-        const taskNode = newTask.getNode();
-        this.nodesTasks.push(taskNode);
-
-        this.appendNodeTask(taskNode);
-        newTask.setFocus();
-    }
-
-    handleBlurNewTask(node, field) {
-        if(field.value.length) {
-            this.tasks.push({
-                id: this.nextId,
-                text: field.value,
-                status: 0
-            })
-            this.nextId += 1;
-
-            localStorage.setItem(lsKeyApp, JSON.stringify({
-                date: this.date,
-                tasks: this.tasks,
-                nextId: this.nextId
-            }))
-
-            this.createTasks();
-            this.renderList();
-        }
-        node.remove();
     }
 }

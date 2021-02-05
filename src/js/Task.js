@@ -5,13 +5,20 @@ export default class Task {
     constructor(task, parentNode, toggleStatus, deleteTask, saveChangeTask) {
         this.id = task.id;
         this.text = task.text;
-        this.status = task.status;
+        this.done = task.done;
         this.edit = task.edit;
 
         this.toggleStatus = toggleStatus;
         this.deleteTask = deleteTask;
         this.saveChangeTask = saveChangeTask;
         this.parentNode = parentNode;
+    }
+
+    updateDataTask(task) {
+        this.id = task.id;
+        this.text = task.text;
+        this.done = task.done;
+        this.edit = task.edit
     }
 
     getNode() {
@@ -24,7 +31,7 @@ export default class Task {
         const input = document.createElement(this.edit ? 'input' : 'div');
         input.classList.add("item-content__input", "input");
         if(!this.edit) {
-            this.status === 1 ? input.classList.add('item-content__input_delete') : '';
+            this.done ? input.classList.add('item-content__input_delete') : '';
             input.innerText = this.text;
             input.onclick = () => {
                 if(document.getSelection().type === 'Range') return;
@@ -78,6 +85,10 @@ export default class Task {
         this.toggleStatus(this.id);
     }
 
+    toggleClassStatus() {
+        this.node.querySelector('.item-content__input').classList.toggle('item-content__input_delete')
+    }
+
     handleClickDelete() {
         this.deleteTask(this.id);
     }
@@ -96,19 +107,11 @@ export default class Task {
 
     handleBlur(node) {
         const text = node.value;
+        this.text = text;
+
         this.saveChangeTask({
             id: this.id,
             text: text
         });
-        return;
-
-        const input = document.createElement('div');
-        input.classList.add("item-content__input", "input");
-        this.task.status === 1 ? input.classList.add('item-content__input_delete') : '';
-        input.innerText = this.task.text;
-        input.onmousedown = this.handleClickTask.bind(this);
-        input.id = `${nodeElements.prefixIdTask}${this.id}`;
-
-        this.parentNode.querySelector(`#${nodeElements.prefixIdTask}${this.id}`).replaceWith(input);
     }
 }

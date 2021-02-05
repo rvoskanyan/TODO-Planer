@@ -3,14 +3,22 @@ import {lsKeyApp} from "./constants";
 export default class LsControl {
 
     constructor() {
-        const state = this.getCurrentState();
-        this.tasks = state.tasks;
-        this.data = state.data;
-        this.nextId = state.nextId;
+        const {tasks, date, nextId} = this.getCurrentState();
+
+        this.tasks = tasks;
+        this.date = date;
+        this.nextId = nextId;
     }
 
     getCurrentState() {
-        return this.parseState(localStorage.getItem(lsKeyApp), 'from');
+        const state = this.parseState(localStorage.getItem(lsKeyApp), 'from');
+
+        if (!state) {
+            this.initialStartState();
+            return this.getCurrentState();
+        }
+
+        return state;
     }
 
     initialStartState() {
@@ -22,14 +30,18 @@ export default class LsControl {
     }
 
     parseState(state, direction) {
-        if(direction === 'from') return JSON.parse(state);
-        if(direction === 'to') return JSON.stringify(state);
+        if (direction === 'from') return JSON.parse(state);
+        if (direction === 'to') return JSON.stringify(state);
 
         return state;
     }
 
-    updateLs(ls) {
-
+    updateLs() {
+        localStorage.setItem(lsKeyApp, this.parseState({
+            date: this.date,
+            tasks: this.tasks,
+            nextId: this.nextId
+        }, 'to'));
     }
 
     getNextId() {
@@ -37,7 +49,7 @@ export default class LsControl {
     }
 
     getListTasks() {
-        return this.parseState(localStorage.getItem(lsKeyApp), 'from');
+        return this.tasks.map(elem => ({...elem}));
     }
 
     getTaskById() {
@@ -57,17 +69,7 @@ export default class LsControl {
         this.tasks.push(newTask);
         this.nextId++;
 
-        console.log({
-            data: this.data,
-            tasks: this.tasks,
-            nextId: this.nextId
-        })
-
-        this.updateLs(this.parseState({
-            data: this.data,
-            tasks: this.tasks,
-            nextId: this.nextId
-        }, 'to'))
+        this.updateLs()
 
         return newTask.id;
     }
@@ -76,7 +78,13 @@ export default class LsControl {
 
     }
 
-    editTask() {
+    editTask(task) {
+        const index = this.tasks.findIndex(item => item.id === task.id);
 
+        this.tasks[index] = {
+            ...this.tasks[index],
+            ...task
+        }
+        this.updateLs();
     }
 }
