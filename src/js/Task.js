@@ -2,7 +2,7 @@ import {nodeElements} from "./constants";
 
 export default class Task {
 
-    constructor(task, parentNode, toggleStatus, deleteTask, saveChangeTask) {
+    constructor(task, parentNode, toggleStatus, deleteTask, saveChangeTask, editTask) {
         this.id = task.id;
         this.text = task.text;
         this.done = task.done;
@@ -11,7 +11,7 @@ export default class Task {
         this.toggleStatus = toggleStatus;
         this.deleteTask = deleteTask;
         this.saveChangeTask = saveChangeTask;
-        this.parentNode = parentNode;
+        this.editTask = editTask;
     }
 
     updateDataTask(task) {
@@ -30,7 +30,16 @@ export default class Task {
 
         const input = document.createElement(this.edit ? 'input' : 'div');
         input.classList.add("item-content__input", "input");
-        if(!this.edit) {
+
+        const iconDelete = document.createElement('i');
+        iconDelete.classList.add("icon", "icon-trash");
+
+        const buttonDelete = document.createElement('button');
+        buttonDelete.classList.add("inner-control__button", "button");
+        buttonDelete.addEventListener('click', () => this.handleClickDelete())
+        buttonDelete.append(iconDelete);
+
+        if (!this.edit) {
             this.done ? input.classList.add('item-content__input_delete') : '';
             input.innerText = this.text;
             input.onclick = () => {
@@ -47,26 +56,17 @@ export default class Task {
             buttonEdit.append(iconEdit);
 
             divControls.append(buttonEdit);
-            divControls.append(buttonEdit);
 
-            if(this.id) {
-                const iconDelete = document.createElement('i');
-                iconDelete.classList.add("icon", "icon-trash");
-
-                const buttonDelete = document.createElement('button');
-                buttonDelete.classList.add("inner-control__button", "button");
-                buttonDelete.addEventListener('click', this.handleClickDelete.bind(this))
-
-                buttonDelete.append(iconDelete);
-
-                divControls.append(buttonDelete);
-            }
+            divControls.append(buttonDelete);
         } else {
             input.value = this.text;
             input.type = 'text';
-            input.addEventListener('blur', () => {
-                this.handleBlur(input);
-            });
+            input.addEventListener('blur', () => this.handleBlur(input));
+            input.addEventListener('keyup', (e) => {
+                if(e.key === 'Enter') this.handleBlur(input);
+            })
+
+            if (this.id) divControls.append(buttonDelete);
         }
         input.id = `${nodeElements.prefixIdTask}${this.id}`;
 
@@ -94,15 +94,7 @@ export default class Task {
     }
 
     handleClickEdit() {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.classList.add("item-content__input", "input");
-        input.value = this.task.text;
-        input.id = `${nodeElements.prefixIdTask}${this.id}`;
-        input.addEventListener('blur', this.handleBlur.bind(this));
-
-        this.parentNode.querySelector(`#${nodeElements.prefixIdTask}${this.id}`).replaceWith(input);
-        this.parentNode.querySelector(`#${nodeElements.prefixIdTask}${this.id}`).focus();
+        this.editTask(this.id);
     }
 
     handleBlur(node) {

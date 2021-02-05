@@ -1,5 +1,4 @@
 import Task from "./Task";
-import {lsKeyApp, nodeElements} from "./constants";
 
 export default class TodoList {
 
@@ -25,7 +24,8 @@ export default class TodoList {
                     this.node,
                     this.toggleStatus.bind(this),
                     this.deleteTask.bind(this),
-                    this.saveChangeTask.bind(this)
+                    this.saveChangeTask.bind(this),
+                    this.editTask.bind(this)
                 ));
             }
         }
@@ -88,7 +88,8 @@ export default class TodoList {
             this.node,
             this.toggleStatus.bind(this),
             this.deleteTask.bind(this),
-            this.saveChangeTask.bind(this)
+            this.saveChangeTask.bind(this),
+            this.editTask.bind(this)
         )
 
         this.examplesTasks.push(newTaskExample);
@@ -116,16 +117,30 @@ export default class TodoList {
     }
 
     deleteTask(id) {
-        const index = this.tasks.findIndex(item => {
-            return item.id === id;
-        });
+        const index = this.tasks.findIndex(item => item.id === id);
+
         this.tasks.splice(index, 1);
-        this.nodesTasks[index].remove();
+        this.examplesTasks[index].node.remove();
+        delete this.examplesTasks[index];
+        this.examplesTasks.splice(index, 1);
+
         this.nodesTasks.splice(index, 1);
-        localStorage.setItem(lsKeyApp, JSON.stringify({
-            date: this.date,
-            tasks: this.tasks
-        }))
+
+        this.lsControl.deleteTask(id);
+    }
+
+    editTask(id) {
+        const index = this.tasks.findIndex(item => item.id === id);
+        const exampleCurrentTask = this.examplesTasks[index];
+
+        this.tasks[index].edit = true;
+        exampleCurrentTask.edit = true;
+
+        const oldNode = exampleCurrentTask.node;
+        const newNode = exampleCurrentTask.getNode();
+
+        oldNode.replaceWith(newNode);
+        exampleCurrentTask.setFocus();
     }
 
     saveChangeTask(task) {
@@ -161,24 +176,35 @@ export default class TodoList {
         }
 
         const index = this.tasks.findIndex(item => item.id === task.id);
-        const newValue = task.text;
-        const oldValue = this.tasks[index].text;
+        const dataCurrentTask = this.tasks[index]
+        const exampleCurrentTask = this.examplesTasks[index];
 
-        if(oldValue === newValue) {
-            return this.tasks[index];
+        if (task.text === dataCurrentTask.text) {
+            dataCurrentTask.edit = false;
+            exampleCurrentTask.edit = false;
+
+            const oldNode = exampleCurrentTask.node;
+            const newNode = exampleCurrentTask.getNode();
+
+            return oldNode.replaceWith(newNode);
         }
 
-        this.tasks[index] = {
-            ...this.tasks[index],
-            text: newValue,
-            status: 0
-        }
+        if (task.text === '') return this.deleteTask(task.id);
 
-        localStorage.setItem(lsKeyApp, JSON.stringify({
-            date: this.date,
-            tasks: this.tasks
-        }))
+        dataCurrentTask.edit = false;
+        dataCurrentTask.done = false;
+        exampleCurrentTask.edit = false;
+        exampleCurrentTask.done = false;
 
-        return this.tasks[index];
+        const oldNode = exampleCurrentTask.node;
+        const newNode = exampleCurrentTask.getNode();
+        oldNode.replaceWith(newNode);
+        this.lsControl.editTask({
+            ...task,
+            done: false
+        });
     }
+
+
+
 }

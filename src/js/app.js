@@ -2,7 +2,6 @@ import LsControl from "./LsControl";
 import TodoList from "./TodoList"
 
 import "../styles/main.scss"
-import {lsKeyApp} from "./constants";
 
 const lsControl = new LsControl();
 const arrayInitElements = document.querySelectorAll('.todo-list-init');

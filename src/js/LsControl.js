@@ -13,12 +13,11 @@ export default class LsControl {
     getCurrentState() {
         const state = this.parseState(localStorage.getItem(lsKeyApp), 'from');
 
-        if (!state) {
-            this.initialStartState();
-            return this.getCurrentState();
-        }
+        if (state) return state;
 
-        return state;
+        this.initialStartState();
+
+        return this.getCurrentState();
     }
 
     initialStartState() {
@@ -44,20 +43,9 @@ export default class LsControl {
         }, 'to'));
     }
 
-    getNextId() {
-        return this.nextId;
-    }
-
     getListTasks() {
+        console.log(this.tasks);
         return this.tasks.map(elem => ({...elem}));
-    }
-
-    getTaskById() {
-
-    }
-
-    getTasksByDate() {
-
     }
 
     addTask(task) {
@@ -74,8 +62,9 @@ export default class LsControl {
         return newTask.id;
     }
 
-    deleteTask() {
-
+    deleteTask(id) {
+        this.tasks.splice(this.tasks.findIndex(item => item.id === id), 1);
+        this.updateLs();
     }
 
     editTask(task) {
