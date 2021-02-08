@@ -1,0 +1,17 @@
+@import "variables";
+
+.icon-list-add:before {
+  content: $icon-list-add;
+}
+.icon-left-open:before {
+  content: $icon-left-open;
+}
+.icon-right-open:before {
+  content: $icon-right-open;
+}
+.icon-pencil:before {
+  content: $icon-pencil;
+}
+.icon-trash:before {
+  content: $icon-trash;
+}

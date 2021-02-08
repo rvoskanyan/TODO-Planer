@@ -1,6 +1,8 @@
+import {typeEvents} from "./constants";
+
 export default class Task {
 
-    constructor(task, parentNode, toggleStatus, deleteTask, saveChangeTask, editTask) {
+    constructor(task, parentNode, {toggleStatus, deleteTask, saveChangeTask, editTask}) {
         this.id = task.id;
         this.text = task.text;
         this.done = task.done;
@@ -21,12 +23,13 @@ export default class Task {
 
     getNode() {
         const div = document.createElement("div");
+        const marker = document.createElement("div");
         div.className = "item-content";
 
         const divControls = document.createElement('div');
         divControls.classList.add("content__control", "inner-control");
 
-        const input = document.createElement(this.edit ? "input" : "div");
+        const input = document.createElement("div");
         input.classList.add("item-content__input", "input");
 
         const iconDelete = document.createElement("i");
@@ -41,7 +44,7 @@ export default class Task {
             this.done ? input.classList.add("item-content__input_delete") : "";
             input.innerText = this.text;
             input.onclick = () => {
-                if(document.getSelection().type === "Range") return;
+                if(document.getSelection().type === typeEvents.RANGE) return;
                 this.handleClickTask();
             }
 
@@ -54,26 +57,40 @@ export default class Task {
             buttonEdit.append(iconEdit);
 
             divControls.append(buttonEdit);
-
             divControls.append(buttonDelete);
         } else {
-            input.value = this.text;
-            input.type = "text";
-            input.addEventListener("blur", () => this.handleBlur(input));
-            input.addEventListener("keyup", (e) => {
-                if(e.key === "Enter") this.handleBlur(input);
+            input.innerText = this.text;
+            input.setAttribute('contenteditable', '');
+            input.addEventListener("focusout", (e) => {
+                if(e.sourceCapabilities !== null) {
+                    this.handleBlur(input)
+                }
+            });
+            input.addEventListener("keypress", (e) => {
+                if(e.key === typeEvents.ENTER) {
+                    this.handleBlur(input);
+                    return false;
+                }
             })
         }
 
+        marker.classList.add("marker");
         div.prepend(input);
         div.append(divControls);
+        div.append(marker);
 
         this.node = div;
+
         return div;
     }
 
     setFocus() {
-        this.node.querySelector("input").focus();
+        const range = document.createRange();
+        range.selectNodeContents(this.node.querySelector(".item-content__input"));
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
     }
 
     handleClickTask() {
@@ -93,7 +110,8 @@ export default class Task {
     }
 
     handleBlur(node) {
-        const text = node.value;
+        console.log('blur');
+        const text = node.innerText;
         this.text = text;
 
         this.saveChangeTask({

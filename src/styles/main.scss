@@ -1,16 +1,6 @@
 @import "./variables.scss";
-
-@font-face {
-  font-family: 'fontello';
-  src: url('../fonts/fontello.eot?65525839');
-  src: url('../fonts/fontello.eot?65525839#iefix') format('embedded-opentype'),
-  url('../fonts/fontello.woff2?65525839') format('woff2'),
-  url('../fonts/fontello.woff?65525839') format('woff'),
-  url('../fonts/fontello.ttf?65525839') format('truetype'),
-  url('../fonts/fontello.svg?65525839#fontello') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
+@import "fonst";
+@import "iconClasses";
 
 html {
   background-color: $font-color;
@@ -33,17 +23,11 @@ body {
 
   &__list {
     margin-top: 15px;
-    background-color: #fff;
+    background-color: $background-list-color;
     width: 100%;
     border-radius: 10px;
     padding: 20px;
     box-sizing: border-box;
-  }
-}
-
-.list {
-  &__head {
-
   }
 }
 
@@ -60,15 +44,9 @@ body {
 }
 
 .when {
-  &__time {
-    width: 25%;
-    background-color: #fff;
-    height: 50px;
-    border-radius: 10px;
-  }
   &__date {
     width: 70%;
-    background-color: #fff;
+    background-color: $background-input-date;
     height: 50px;
     border-radius: 10px;
   }
@@ -93,12 +71,27 @@ body {
   }
 }
 
+.marker {
+  width: 12px;
+  height: 12px;
+  background-color: rgba(255, 0, 0, 0.5);
+  border-radius: 100%;
+  position: absolute;
+  left: -20px;
+  top: 6px;
+}
+
 .item-content {
-  border-bottom: 2px dashed #cfc4c4;
   display: flex;
+  position: relative;
+  width: 92%;
+
+  background: repeating-linear-gradient(90deg, transparent 0 7px, $background-list-color 7px 10px), repeating-linear-gradient(transparent 0px 22px, $separator-line-color 20px 23px);
 
   &__input {
     font-size: 20px;
+    padding: 0;
+    font-family: 'Times New Roman';
 
     &_delete {
       text-decoration: line-through;
@@ -106,12 +99,28 @@ body {
   }
 }
 
+.content {
+  &__control {
+    position: absolute;
+    right: -60px;
+    top: 1px;
+  }
+}
+
 .item-content:not(:first-child) {
   margin-top: 10px;
 }
 
+.button {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+}
+
 .control {
-  background-color: #fff;
+  background-color: $background-control-color;
   margin-top: 15px;
   border-radius: 10px;
   padding: 15px;
@@ -124,33 +133,35 @@ body {
     border-radius: 100%;
 
     &_move {
-      background-color: #317cc8!important;
+      background-color: $btn-move-color;
     }
 
     &_contents {
-      background-color: #6f7e8d!important;
+      background-color: $btn-contents-color;
     }
 
     &_add {
-      background-color: #26952e!important;
+      background-color: $btn-add-color;
     }
 
     &_delete {
-      background-color: #b21919!important;
+      background-color: $btn-delete-color;
+    }
+  }
+
+  &__icon {
+    &_left {
+      padding-right: 4px;
+    }
+
+    &_right {
+      padding-left: 4px;
     }
   }
 
   &__icon:before {
-    color: #fff!important;
+    color: $icon-control-color!important;
   }
-}
-
-.button {
-  background: none;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 0;
 }
 
 .icon:before {
@@ -159,7 +170,7 @@ body {
   font-weight: normal;
   font-size: 20px;
   speak: never;
-  color: #5d86ab;
+  color: $icon-color;
 
   display: inline-block;
   text-decoration: inherit;
@@ -179,9 +190,3 @@ body {
 .inner-control {
   display: flex;
 }
-
-.icon-list-add:before { content: '\e800'; }
-.icon-left-open:before { content: '\e802'; }
-.icon-right-open:before { content: '\e803'; }
-.icon-pencil:before { content: '\e804'; }
-.icon-trash:before { content: '\f1f8'; }

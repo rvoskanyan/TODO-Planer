@@ -1,17 +1,20 @@
 import Task from "./Task";
+import {messages, systemConstant} from "./constants";
 
 export default class TodoList {
 
     examplesTasks = [];
     nodesTasks = [];
 
-    constructor(state, node, lsControl) {
+    constructor(state, node, lsControl, childNode) {
         this.node = node;
+        this.childNode = childNode;
         this.lsControl = lsControl;
         this.tasks = state.tasks;
 
         this.createTasks();
         this.renderList();
+        this.initDate();
     }
 
     createTasks() {
@@ -22,51 +25,63 @@ export default class TodoList {
                 this.examplesTasks.push(new Task(
                     elem,
                     this.node,
-                    this.toggleStatus.bind(this),
-                    this.deleteTask.bind(this),
-                    this.saveChangeTask.bind(this),
-                    this.editTask.bind(this)
+                    {
+                        toggleStatus: this.toggleStatus.bind(this),
+                        deleteTask: this.deleteTask.bind(this),
+                        saveChangeTask: this.saveChangeTask.bind(this),
+                        editTask: this.editTask.bind(this)
+                    }
                 ));
             }
         }
     }
 
-    renderList() {
-        const noTasks = document.createElement('div');
-        noTasks.innerText = 'Задачи не найдены';
-        this.noTasks = noTasks;
+    initDate() {
+        const nodeDate = this.childNode.querySelector('.todo-list-init-date');
 
+        nodeDate.valueAsDate = new Date(this.lsControl.getDate());
+        nodeDate.addEventListener("change", () => {
+            this.lsControl.setDate(new Date(nodeDate.value));
+        })
+    }
+
+    renderList() {
+        const noTasks = document.createElement("div");
+
+        noTasks.innerText = messages.NO_TASKS;
+        this.noTasks = noTasks;
         this.nodesTasks = [];
 
         const wrapper = this.node.querySelector(".wrapper");
-
         const newWrapper = document.createElement("div");
-        newWrapper.classList.add("list__content", "wrapper");
 
+        newWrapper.classList.add("list__content", "wrapper");
         wrapper ? wrapper.replaceWith(newWrapper) : this.node.append(newWrapper);
 
-        if(this.examplesTasks.length) {
-            for(let elem of this.examplesTasks) {
-                const taskNode = elem.getNode();
-                if(elem.edit) elem.setFocus();
-
-                this.appendNodeTask(taskNode);
-                this.nodesTasks.push(taskNode);
-            }
+        if (!this.examplesTasks.length) {
+            return this.appendNodeTask(this.noTasks);
         }
-        else {
-            this.appendNodeTask(this.noTasks);
+
+        for (let elem of this.examplesTasks) {
+            const taskNode = elem.getNode();
+            if (elem.edit) {
+                elem.setFocus();
+            }
+
+            this.appendNodeTask(taskNode);
+            this.nodesTasks.push(taskNode);
         }
     }
 
     appendNodeTask(node) {
         const wrapper = this.node.querySelector(".wrapper");
 
-        if(wrapper) {
+        if (wrapper) {
             return wrapper.append(node);
         }
 
         const newWrapper = document.createElement("div");
+
         newWrapper.classList.add("list__content", "wrapper");
         newWrapper.append(node);
 
@@ -75,8 +90,8 @@ export default class TodoList {
 
     addTask() {
         const newTask = {
-            id: 'newTask',
-            text: '',
+            id: systemConstant.NEW_TASK_ID,
+            text: "",
             done: false,
             edit: true
         }
@@ -89,10 +104,12 @@ export default class TodoList {
         const newTaskExample = new Task(
             newTask,
             this.node,
-            this.toggleStatus.bind(this),
-            this.deleteTask.bind(this),
-            this.saveChangeTask.bind(this),
-            this.editTask.bind(this)
+            {
+                toggleStatus: this.toggleStatus.bind(this),
+                deleteTask: this.deleteTask.bind(this),
+                saveChangeTask: this.saveChangeTask.bind(this),
+                editTask: this.editTask.bind(this)
+            }
         )
 
         this.examplesTasks.push(newTaskExample);
@@ -105,10 +122,15 @@ export default class TodoList {
     }
 
     toggleStatus(id) {
-        if (!Number.isInteger(id)) return alert("Ошибка идентификатора!")
+        if (!Number.isInteger(id)) {
+            return console.error(messages.ERROR_ID);
+        }
 
         const index = this.tasks.findIndex(item => item.id === id);
-        if (index === -1) return alert("Элемент не найден!");
+
+        if (index === -1) {
+            return console.error(messages.ELEMENT_NOT_FOUND);
+        }
 
         const examplesCurrentTask = this.examplesTasks[index];
         const dataCurrentTask = this.tasks[index];
@@ -124,26 +146,34 @@ export default class TodoList {
     }
 
     deleteTask(id) {
-        if (!Number.isInteger(id)) return alert("Ошибка идентификатора!")
+        if (!Number.isInteger(id)) {
+            return console.error(messages.ERROR_ID)
+        }
 
         const index = this.tasks.findIndex(item => item.id === id);
-        if (index === -1) return alert("Элемент не найден!");
+
+        if (index === -1) {
+            return console.error(messages.ELEMENT_NOT_FOUND);
+        }
 
         this.tasks.splice(index, 1);
         this.examplesTasks[index].node.remove();
         delete this.examplesTasks[index];
         this.examplesTasks.splice(index, 1);
-
         this.nodesTasks.splice(index, 1);
-
         this.lsControl.deleteTask(id);
     }
 
     editTask(id) {
-        if (!Number.isInteger(id)) return alert("Ошибка идентификатора!")
+        if (!Number.isInteger(id)) {
+            return console.error(messages.ERROR_ID);
+        }
 
         const index = this.tasks.findIndex(item => item.id === id);
-        if (index === -1) return alert("Элемент не найден!");
+
+        if (index === -1) {
+            return console.error(messages.ELEMENT_NOT_FOUND);
+        }
 
         const exampleCurrentTask = this.examplesTasks[index];
 
@@ -158,8 +188,10 @@ export default class TodoList {
     }
 
     saveChangeTask(task) {
-        if ((!Number.isInteger(task.id) && task.id !== "newTask") || typeof(task.text) !== "string") return alert("Ошибка данных!");
-        if (task.id === "newTask" && this.tasks[this.tasks.length - 1].id === "newTask") {
+        if ((!Number.isInteger(task.id) && task.id !== systemConstant.NEW_TASK_ID) || typeof(task.text) !== "string") {
+            return console.error(messages.ERROR_DATA);
+        }
+        if (task.id === systemConstant.NEW_TASK_ID && this.tasks[this.tasks.length - 1].id === systemConstant.NEW_TASK_ID) {
             if (task.text === "") {
                 this.nodesTasks[this.nodesTasks.length - 1].remove();
                 delete this.examplesTasks[this.examplesTasks.length - 1];
@@ -191,17 +223,18 @@ export default class TodoList {
             return;
         }
 
-        const index = this.tasks.findIndex(item => item.id === 343243);
+        const index = this.tasks.findIndex(item => item.id === task.id);
 
         if (index === -1) {
             const indexExample = this.examplesTasks.findIndex(item => item.id === task.id);
+            const oldNode = this.examplesTasks[indexExample].node;
+
             this.examplesTasks[indexExample].edit = false;
 
-            const oldNode = this.examplesTasks[indexExample].node;
             const newNode = this.examplesTasks[indexExample].getNode();
 
             oldNode.replaceWith(newNode);
-            return alert("Элемент не найден, данные не сохранены!");
+            return console.error(messages.NOT_SAVE);
         }
 
         const dataCurrentTask = this.tasks[index]

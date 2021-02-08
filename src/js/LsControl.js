@@ -28,6 +28,15 @@ export default class LsControl {
         }, 'to'))
     }
 
+    getDate() {
+        return this.date ? this.date : new Date();
+    }
+
+    setDate(date) {
+        this.date = date;
+        this.updateLs();
+    }
+
     parseState(state, direction) {
         if (direction === "from") return JSON.parse(state);
         if (direction === "to") return JSON.stringify(state);
