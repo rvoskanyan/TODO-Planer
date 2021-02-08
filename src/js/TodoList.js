@@ -32,17 +32,20 @@ export default class TodoList {
     }
 
     renderList() {
+        const noTasks = document.createElement('div');
+        noTasks.innerText = 'Задачи не найдены';
+        this.noTasks = noTasks;
+
         this.nodesTasks = [];
 
+        const wrapper = this.node.querySelector(".wrapper");
+
+        const newWrapper = document.createElement("div");
+        newWrapper.classList.add("list__content", "wrapper");
+
+        wrapper ? wrapper.replaceWith(newWrapper) : this.node.append(newWrapper);
+
         if(this.examplesTasks.length) {
-
-            const wrapper = this.node.querySelector('.wrapper');
-
-            const newWrapper = document.createElement('div');
-            newWrapper.classList.add('list__content', 'wrapper');
-
-            wrapper ? wrapper.replaceWith(newWrapper) : this.node.append(newWrapper);
-
             for(let elem of this.examplesTasks) {
                 const taskNode = elem.getNode();
                 if(elem.edit) elem.setFocus();
@@ -52,19 +55,19 @@ export default class TodoList {
             }
         }
         else {
-            console.log('Задачи не найдены!')
+            this.appendNodeTask(this.noTasks);
         }
     }
 
     appendNodeTask(node) {
-        const wrapper = this.node.querySelector('.wrapper');
+        const wrapper = this.node.querySelector(".wrapper");
 
         if(wrapper) {
             return wrapper.append(node);
         }
 
-        const newWrapper = document.createElement('div');
-        newWrapper.classList.add('list__content', 'wrapper');
+        const newWrapper = document.createElement("div");
+        newWrapper.classList.add("list__content", "wrapper");
         newWrapper.append(node);
 
         this.node.append(newWrapper);
@@ -72,7 +75,7 @@ export default class TodoList {
 
     addTask() {
         const newTask = {
-            id: undefined,
+            id: 'newTask',
             text: '',
             done: false,
             edit: true
@@ -102,7 +105,11 @@ export default class TodoList {
     }
 
     toggleStatus(id) {
+        if (!Number.isInteger(id)) return alert("Ошибка идентификатора!")
+
         const index = this.tasks.findIndex(item => item.id === id);
+        if (index === -1) return alert("Элемент не найден!");
+
         const examplesCurrentTask = this.examplesTasks[index];
         const dataCurrentTask = this.tasks[index];
 
@@ -117,7 +124,10 @@ export default class TodoList {
     }
 
     deleteTask(id) {
+        if (!Number.isInteger(id)) return alert("Ошибка идентификатора!")
+
         const index = this.tasks.findIndex(item => item.id === id);
+        if (index === -1) return alert("Элемент не найден!");
 
         this.tasks.splice(index, 1);
         this.examplesTasks[index].node.remove();
@@ -130,7 +140,11 @@ export default class TodoList {
     }
 
     editTask(id) {
+        if (!Number.isInteger(id)) return alert("Ошибка идентификатора!")
+
         const index = this.tasks.findIndex(item => item.id === id);
+        if (index === -1) return alert("Элемент не найден!");
+
         const exampleCurrentTask = this.examplesTasks[index];
 
         this.tasks[index].edit = true;
@@ -144,8 +158,9 @@ export default class TodoList {
     }
 
     saveChangeTask(task) {
-        if(!task.id && !this.tasks[this.tasks.length - 1].id) {
-            if(task.text === '') {
+        if ((!Number.isInteger(task.id) && task.id !== "newTask") || typeof(task.text) !== "string") return alert("Ошибка данных!");
+        if (task.id === "newTask" && this.tasks[this.tasks.length - 1].id === "newTask") {
+            if (task.text === "") {
                 this.nodesTasks[this.nodesTasks.length - 1].remove();
                 delete this.examplesTasks[this.examplesTasks.length - 1];
                 this.examplesTasks = this.examplesTasks.splice(this.examplesTasks.length - 1, 1);
@@ -160,6 +175,7 @@ export default class TodoList {
             });
 
             this.tasks[this.tasks.length - 1].id = idNewTask;
+            this.tasks[this.tasks.length - 1].text = task.text;
             this.examplesTasks[this.examplesTasks.length - 1].updateDataTask({
                 id: idNewTask,
                 text: task.text,
@@ -175,7 +191,19 @@ export default class TodoList {
             return;
         }
 
-        const index = this.tasks.findIndex(item => item.id === task.id);
+        const index = this.tasks.findIndex(item => item.id === 343243);
+
+        if (index === -1) {
+            const indexExample = this.examplesTasks.findIndex(item => item.id === task.id);
+            this.examplesTasks[indexExample].edit = false;
+
+            const oldNode = this.examplesTasks[indexExample].node;
+            const newNode = this.examplesTasks[indexExample].getNode();
+
+            oldNode.replaceWith(newNode);
+            return alert("Элемент не найден, данные не сохранены!");
+        }
+
         const dataCurrentTask = this.tasks[index]
         const exampleCurrentTask = this.examplesTasks[index];
 
@@ -189,7 +217,7 @@ export default class TodoList {
             return oldNode.replaceWith(newNode);
         }
 
-        if (task.text === '') return this.deleteTask(task.id);
+        if (task.text === "") return this.deleteTask(task.id);
 
         dataCurrentTask.edit = false;
         dataCurrentTask.done = false;
@@ -204,7 +232,4 @@ export default class TodoList {
             done: false
         });
     }
-
-
-
 }

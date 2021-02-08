@@ -1,5 +1,3 @@
-import {nodeElements} from "./constants";
-
 export default class Task {
 
     constructor(task, parentNode, toggleStatus, deleteTask, saveChangeTask, editTask) {
@@ -22,37 +20,37 @@ export default class Task {
     }
 
     getNode() {
-        const div = document.createElement('div');
-        div.className = 'item-content';
+        const div = document.createElement("div");
+        div.className = "item-content";
 
         const divControls = document.createElement('div');
         divControls.classList.add("content__control", "inner-control");
 
-        const input = document.createElement(this.edit ? 'input' : 'div');
+        const input = document.createElement(this.edit ? "input" : "div");
         input.classList.add("item-content__input", "input");
 
-        const iconDelete = document.createElement('i');
+        const iconDelete = document.createElement("i");
         iconDelete.classList.add("icon", "icon-trash");
 
-        const buttonDelete = document.createElement('button');
+        const buttonDelete = document.createElement("button");
         buttonDelete.classList.add("inner-control__button", "button");
         buttonDelete.addEventListener('click', () => this.handleClickDelete())
         buttonDelete.append(iconDelete);
 
         if (!this.edit) {
-            this.done ? input.classList.add('item-content__input_delete') : '';
+            this.done ? input.classList.add("item-content__input_delete") : "";
             input.innerText = this.text;
             input.onclick = () => {
-                if(document.getSelection().type === 'Range') return;
+                if(document.getSelection().type === "Range") return;
                 this.handleClickTask();
             }
 
-            const iconEdit = document.createElement('i');
+            const iconEdit = document.createElement("i");
             iconEdit.classList.add("icon", "icon-pencil");
 
-            const buttonEdit = document.createElement('button');
+            const buttonEdit = document.createElement("button");
             buttonEdit.classList.add("inner-control__button", "button");
-            buttonEdit.addEventListener('click', this.handleClickEdit.bind(this));
+            buttonEdit.addEventListener("click", this.handleClickEdit.bind(this));
             buttonEdit.append(iconEdit);
 
             divControls.append(buttonEdit);
@@ -60,15 +58,12 @@ export default class Task {
             divControls.append(buttonDelete);
         } else {
             input.value = this.text;
-            input.type = 'text';
-            input.addEventListener('blur', () => this.handleBlur(input));
-            input.addEventListener('keyup', (e) => {
-                if(e.key === 'Enter') this.handleBlur(input);
+            input.type = "text";
+            input.addEventListener("blur", () => this.handleBlur(input));
+            input.addEventListener("keyup", (e) => {
+                if(e.key === "Enter") this.handleBlur(input);
             })
-
-            if (this.id) divControls.append(buttonDelete);
         }
-        input.id = `${nodeElements.prefixIdTask}${this.id}`;
 
         div.prepend(input);
         div.append(divControls);
@@ -78,7 +73,7 @@ export default class Task {
     }
 
     setFocus() {
-        this.node.querySelector('input').focus();
+        this.node.querySelector("input").focus();
     }
 
     handleClickTask() {
@@ -86,7 +81,7 @@ export default class Task {
     }
 
     toggleClassStatus() {
-        this.node.querySelector('.item-content__input').classList.toggle('item-content__input_delete')
+        this.node.querySelector(".item-content__input").classList.toggle("item-content__input_delete")
     }
 
     handleClickDelete() {

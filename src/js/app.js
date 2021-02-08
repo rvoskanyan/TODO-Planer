@@ -8,7 +8,7 @@ const arrayInitElements = document.querySelectorAll('.todo-list-init');
 const tasks = lsControl.getListTasks();
 
 for(let node of arrayInitElements) {
-    node.innerHTML = '<div class="container__when when" id="timeDate">\n' +
+    node.innerHTML = '<div class="container__when when">\n' +
         '        <div class="when__date input-wrapper">\n' +
         '            <input type="date" class="input">\n' +
         '        </div>\n' +
@@ -27,9 +27,9 @@ for(let node of arrayInitElements) {
         '        </div>\n' +
         '    </div>\n' +
         '    <div class="container__control control">\n' +
-        '        <button class="control__button control__button_move button"><i class="icon icon-left-open"></i></button>\n' +
-        '        <button class="control__button control__button_add button todo-list-init-content-add-button"><i class="icon icon-list-add"></i></button>\n' +
-        '        <button class="control__button control__button_move button"><i class="icon icon-right-open"></i></button>\n' +
+        '        <button class="control__button control__button_move button"><i class="control__icon icon icon-left-open"></i></button>\n' +
+        '        <button class="control__button control__button_add button todo-list-init-content-add-button"><i class="control__icon icon icon-list-add"></i></button>\n' +
+        '        <button class="control__button control__button_move button"><i class="control__icon icon icon-right-open"></i></button>\n' +
         '    </div>';
 
     const todoList = new TodoList({tasks}, node.querySelector('.todo-list-init-content'), lsControl);

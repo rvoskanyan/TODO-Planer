@@ -29,8 +29,8 @@ export default class LsControl {
     }
 
     parseState(state, direction) {
-        if (direction === 'from') return JSON.parse(state);
-        if (direction === 'to') return JSON.stringify(state);
+        if (direction === "from") return JSON.parse(state);
+        if (direction === "to") return JSON.stringify(state);
 
         return state;
     }
@@ -40,11 +40,10 @@ export default class LsControl {
             date: this.date,
             tasks: this.tasks,
             nextId: this.nextId
-        }, 'to'));
+        }, "to"));
     }
 
     getListTasks() {
-        console.log(this.tasks);
         return this.tasks.map(elem => ({...elem}));
     }
 
