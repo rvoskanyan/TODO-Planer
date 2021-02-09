@@ -8,7 +8,8 @@ const arrayInitElements = document.querySelectorAll('.todo-list-init');
 const tasks = lsControl.getListTasks();
 
 arrayInitElements.forEach((node) => {
-  node.innerHTML = `
+  const nodeDubl = node;
+  nodeDubl.innerHTML = `
       <div class="container__when when">
           <div class="when__date input-wrapper">
               <input type="date" class="input todo-list-init-date">
@@ -39,7 +40,7 @@ arrayInitElements.forEach((node) => {
           </button>-->
       </div>`;
 
-  const todoList = new TodoList({ tasks }, node.querySelector('.todo-list-init-content'), lsControl, node);
+  const todoList = new TodoList({ tasks }, nodeDubl.querySelector('.todo-list-init-content'), lsControl, node);
 
-  node.querySelector('.todo-list-init-content-add-button').addEventListener('click', todoList.addTask.bind(todoList));
+  nodeDubl.querySelector('.todo-list-init-content-add-button').addEventListener('click', todoList.addTask.bind(todoList));
 });

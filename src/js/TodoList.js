@@ -113,6 +113,7 @@ export default class TodoList {
     this.examplesTasks.push(newTaskExample);
 
     const taskNode = newTaskExample.getNode();
+
     this.nodesTasks.push(taskNode);
 
     this.appendNodeTask(taskNode);
@@ -153,12 +154,12 @@ export default class TodoList {
     if (index === -1) {
       return console.error(Messages.ELEMENT_NOT_FOUND);
     }
-
     this.tasks.splice(index, 1);
     this.examplesTasks[index].node.remove();
     delete this.examplesTasks[index];
     this.examplesTasks.splice(index, 1);
     this.nodesTasks.splice(index, 1);
+
     return this.lsControl.deleteTask(id);
   }
 
@@ -182,6 +183,7 @@ export default class TodoList {
     const newNode = exampleCurrentTask.getNode();
 
     oldNode.replaceWith(newNode);
+
     return exampleCurrentTask.setFocus();
   }
 
@@ -198,6 +200,7 @@ export default class TodoList {
         delete this.examplesTasks[this.examplesTasks.length - 1];
         this.examplesTasks = this.examplesTasks.splice(this.examplesTasks.length - 1, 1);
         this.nodesTasks = this.nodesTasks.splice(this.examplesTasks.length - 1, 1);
+
         return false;
       }
 
@@ -234,6 +237,7 @@ export default class TodoList {
       const newNode = this.examplesTasks[indexExample].getNode();
 
       oldNode.replaceWith(newNode);
+
       return console.error(Messages.NOT_SAVE);
     }
 
@@ -265,6 +269,7 @@ export default class TodoList {
     const newNode = exampleCurrentTask.getNode();
 
     oldNode.replaceWith(newNode);
+
     return this.lsControl.editTask({
       ...task,
       done: false,
