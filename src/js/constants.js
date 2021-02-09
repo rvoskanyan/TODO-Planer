@@ -1,15 +1,15 @@
 export const lsKeyApp = "application";
 
-export const systemConstant = {
+export const SystemConstant = {
     NEW_TASK_ID: "newTask"
 }
 
-export const typeEvents = {
+export const TypeEvents = {
     RANGE: "Range",
     ENTER: "Enter"
 }
 
-export const messages = {
+export const Messages = {
     NO_TASKS: "Задачи не найдены",
     ERROR_ID: "Ошибка идентификатора!",
     ELEMENT_NOT_FOUND: "Элемент не найден!",

@@ -1,5 +1,5 @@
 import Task from "./Task";
-import {messages, systemConstant} from "./constants";
+import {Messages, SystemConstant} from "./constants";
 
 export default class TodoList {
 
@@ -47,13 +47,12 @@ export default class TodoList {
 
     renderList() {
         const noTasks = document.createElement("div");
-
-        noTasks.innerText = messages.NO_TASKS;
-        this.noTasks = noTasks;
-        this.nodesTasks = [];
-
         const wrapper = this.node.querySelector(".wrapper");
         const newWrapper = document.createElement("div");
+
+        noTasks.innerText = Messages.NO_TASKS;
+        this.noTasks = noTasks;
+        this.nodesTasks = [];
 
         newWrapper.classList.add("list__content", "wrapper");
         wrapper ? wrapper.replaceWith(newWrapper) : this.node.append(newWrapper);
@@ -90,7 +89,7 @@ export default class TodoList {
 
     addTask() {
         const newTask = {
-            id: systemConstant.NEW_TASK_ID,
+            id: SystemConstant.NEW_TASK_ID,
             text: "",
             done: false,
             edit: true
@@ -123,13 +122,13 @@ export default class TodoList {
 
     toggleStatus(id) {
         if (!Number.isInteger(id)) {
-            return console.error(messages.ERROR_ID);
+            return console.error(Messages.ERROR_ID);
         }
 
         const index = this.tasks.findIndex(item => item.id === id);
 
         if (index === -1) {
-            return console.error(messages.ELEMENT_NOT_FOUND);
+            return console.error(Messages.ELEMENT_NOT_FOUND);
         }
 
         const examplesCurrentTask = this.examplesTasks[index];
@@ -147,13 +146,13 @@ export default class TodoList {
 
     deleteTask(id) {
         if (!Number.isInteger(id)) {
-            return console.error(messages.ERROR_ID)
+            return console.error(Messages.ERROR_ID)
         }
 
         const index = this.tasks.findIndex(item => item.id === id);
 
         if (index === -1) {
-            return console.error(messages.ELEMENT_NOT_FOUND);
+            return console.error(Messages.ELEMENT_NOT_FOUND);
         }
 
         this.tasks.splice(index, 1);
@@ -166,13 +165,13 @@ export default class TodoList {
 
     editTask(id) {
         if (!Number.isInteger(id)) {
-            return console.error(messages.ERROR_ID);
+            return console.error(Messages.ERROR_ID);
         }
 
         const index = this.tasks.findIndex(item => item.id === id);
 
         if (index === -1) {
-            return console.error(messages.ELEMENT_NOT_FOUND);
+            return console.error(Messages.ELEMENT_NOT_FOUND);
         }
 
         const exampleCurrentTask = this.examplesTasks[index];
@@ -188,10 +187,13 @@ export default class TodoList {
     }
 
     saveChangeTask(task) {
-        if ((!Number.isInteger(task.id) && task.id !== systemConstant.NEW_TASK_ID) || typeof(task.text) !== "string") {
-            return console.error(messages.ERROR_DATA);
+        if ((!Number.isInteger(task.id) && task.id !== SystemConstant.NEW_TASK_ID) || typeof(task.text) !== "string") {
+            return console.error(Messages.ERROR_DATA);
         }
-        if (task.id === systemConstant.NEW_TASK_ID && this.tasks[this.tasks.length - 1].id === systemConstant.NEW_TASK_ID) {
+        if (
+            task.id === SystemConstant.NEW_TASK_ID &&
+            this.tasks[this.tasks.length - 1].id === SystemConstant.NEW_TASK_ID
+        ) {
             if (task.text === "") {
                 this.nodesTasks[this.nodesTasks.length - 1].remove();
                 delete this.examplesTasks[this.examplesTasks.length - 1];
@@ -234,7 +236,7 @@ export default class TodoList {
             const newNode = this.examplesTasks[indexExample].getNode();
 
             oldNode.replaceWith(newNode);
-            return console.error(messages.NOT_SAVE);
+            return console.error(Messages.NOT_SAVE);
         }
 
         const dataCurrentTask = this.tasks[index]

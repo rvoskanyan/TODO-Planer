@@ -1,4 +1,4 @@
-import {typeEvents} from "./constants";
+import {TypeEvents} from "./constants";
 
 export default class Task {
 
@@ -44,7 +44,7 @@ export default class Task {
             this.done ? input.classList.add("item-content__input_delete") : "";
             input.innerText = this.text;
             input.onclick = () => {
-                if(document.getSelection().type === typeEvents.RANGE) return;
+                if(document.getSelection().type === TypeEvents.RANGE) return;
                 this.handleClickTask();
             }
 
@@ -67,7 +67,7 @@ export default class Task {
                 }
             });
             input.addEventListener("keypress", (e) => {
-                if(e.key === typeEvents.ENTER) {
+                if(e.key === TypeEvents.ENTER) {
                     this.handleBlur(input);
                     return false;
                 }
@@ -86,9 +86,12 @@ export default class Task {
 
     setFocus() {
         const range = document.createRange();
+
         range.selectNodeContents(this.node.querySelector(".item-content__input"));
         range.collapse(false);
+
         const sel = window.getSelection();
+
         sel.removeAllRanges();
         sel.addRange(range);
     }
@@ -110,7 +113,6 @@ export default class Task {
     }
 
     handleBlur(node) {
-        console.log('blur');
         const text = node.innerText;
         this.text = text;
 
