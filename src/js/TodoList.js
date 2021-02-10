@@ -2,17 +2,27 @@ import Task from './Task';
 import { Messages, SystemConstant } from './constants';
 
 export default class TodoList {
-  constructor(state, node, lsControl, childNode) {
+  constructor(state, node, lsControl, childNode, postman) {
     this.node = node;
     this.childNode = childNode;
     this.lsControl = lsControl;
     this.tasks = state.tasks;
     this.examplesTasks = [];
     this.nodesTasks = [];
+    this.postman = postman;
 
     this.createTasks();
     this.renderList();
     this.initDate();
+
+    postman.get(`list/${3}/tasks`).then((result) => {
+      this.testQueryTasks = result;
+    });
+  }
+
+  set testQueryTasks(value) {
+    console.log(`Перерисовываем список задач с новыми данными: '${value.message}'`);
+    return true;
   }
 
   createTasks() {

@@ -1,0 +1,1 @@
+{"tables":{"tasks":{"columns":[{"columnid":"id","dbtypeid":"INT"},{"columnid":"text","dbtypeid":"STRING"},{"columnid":"done","dbtypeid":"BOOLEAN"}],"dirty":true}},"tasks":[{"id":1,"text":"Task Test!","done":true},{"id":2,"text":"Go to work!","done":false},{"id":3,"text":"Lunch!","done":true}]}

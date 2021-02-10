@@ -1,5 +1,6 @@
 import LsControl from './LsControl';
 import TodoList from './TodoList';
+import Postman from './Postman';
 
 import '../styles/main.scss';
 
@@ -8,7 +9,9 @@ const arrayInitElements = document.querySelectorAll('.todo-list-init');
 const tasks = lsControl.getListTasks();
 
 arrayInitElements.forEach((node) => {
+  const postman = new Postman('http://localhost:3000', '/api/');
   const nodeDubl = node;
+
   nodeDubl.innerHTML = `
       <div class="container__when when">
           <div class="when__date input-wrapper">
@@ -40,7 +43,7 @@ arrayInitElements.forEach((node) => {
           </button>-->
       </div>`;
 
-  const todoList = new TodoList({ tasks }, nodeDubl.querySelector('.todo-list-init-content'), lsControl, node);
+  const todoList = new TodoList({ tasks }, nodeDubl.querySelector('.todo-list-init-content'), lsControl, node, postman);
 
   nodeDubl.querySelector('.todo-list-init-content-add-button').addEventListener('click', todoList.addTask.bind(todoList));
 });
