@@ -4,28 +4,31 @@ export default class Postman {
   }
 
   get(apiMethod, data, meta) {
-    return this.send(`${this.apiUrl}${apiMethod}${data ? `/${data}` : ''}${meta ? this.parseQueryString(meta) : ''}`, {
+    return this.send(`${apiMethod}${data ? `/${data}` : ''}${meta ? this.parseQueryString(meta) : ''}`, {
       method: 'get',
     });
   }
 
   post(apiMethod, data) {
-    return this.send(`${this.apiUrl}${apiMethod}`, {
+    return this.send(apiMethod, {
       method: 'post',
       body: JSON.stringify(data),
     });
   }
 
-  put(apiMethod, meta) {
-
+  put(apiMethod, data) {
+    return this.send(apiMethod, {
+      method: 'put',
+      body: JSON.stringify(data),
+    });
   }
 
   delete(apiMethod) {
 
   }
 
-  send(url, options) {
-    return fetch(url, {
+  send(apiMethod, options) {
+    return fetch(`${this.apiUrl}${apiMethod}`, {
       headers: { 'Content-Type': 'application/json' },
       mode: 'cors',
       ...options,

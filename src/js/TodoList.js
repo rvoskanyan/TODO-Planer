@@ -15,13 +15,14 @@ export default class TodoList {
     this.renderList();
     this.initDate();
 
-    postman.get(`list/${3}/tasks`).then((result) => {
-      this.testQueryTasks = result;
+    postman.put('list/884caac808cd269a8b1456ab92669ee5', {
+      date: new Date().toString(),
     });
   }
 
   set testQueryTasks(value) {
     console.log(`Перерисовываем список задач с новыми данными: '${value.message}'`);
+
     return true;
   }
 

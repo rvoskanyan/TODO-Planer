@@ -20,6 +20,8 @@ app.use((request, response, next) => {
 
 const api = new Api(app);
 
+api.initialRouters();
+
 app.listen(port, (err) => {
   if (err) {
     return console.error('something bad happened', err);
