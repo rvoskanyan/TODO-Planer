@@ -1,12 +1,41 @@
 import { lsKeyApp } from './constants';
 
 export default class LsControl {
-  constructor() {
-    const { tasks, date, nextId } = this.getCurrentState();
+  requestedData = {}
 
-    this.tasks = tasks;
-    this.date = date;
-    this.nextId = nextId;
+  constructor() {
+    if (!LsControl._instance) {
+      LsControl._instance = this;
+    }
+    return LsControl._instance;
+  }
+
+  static getInstance() {
+    return this._instance;
+  }
+
+  getDataByLsKey(key) {
+    if (this.requestedData[key]) {
+      return this.requestedData[key];
+    }
+
+    return this.requestedData[key] = this.parseState(localStorage.getItem(key), 'from');
+  }
+
+  getItemByField(field, value, lsKey) {
+
+  }
+
+  createItem(data, lsKey) {
+
+  }
+
+  updateItem(data, lsKey) {
+
+  }
+
+  deleteItem(id, lsKey) {
+
   }
 
   getCurrentState() {
@@ -43,12 +72,8 @@ export default class LsControl {
     return state;
   }
 
-  updateLs() {
-    localStorage.setItem(lsKeyApp, this.parseState({
-      date: this.date,
-      tasks: this.tasks,
-      nextId: this.nextId,
-    }, 'to'));
+  updateLs(lsKey) {
+    localStorage.setItem(lsKey, this.parseState(this.requestedData[lsKey], 'to'));
   }
 
   getListTasks() {

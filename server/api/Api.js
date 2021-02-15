@@ -50,7 +50,7 @@ class Api {
   }
 
   getTaskListById(request, response) {
-    const result = this.db.getItemById(request.params.id, 'tasks');
+    const result = this.db.getItemsByFieldValue('listId', request.params.id, 'tasks');
 
     response.send({
       list: result,
@@ -91,41 +91,77 @@ class Api {
       throw createError(400, 'Invalid data type');
     }
 
-    this.db.editItemById(id, [name && ['name', name], date && ['date', date]], 'lists');
+    const currentDate = new Date().toString();
+
+    this.db.editItemById(id, [name && ['name', name], date && ['date', date], ['dateUpdate', currentDate]], 'lists');
 
     response.send('success');
   }
 
   deleteList(request, response) {
-    response.send({
-      message: `Запрос на удаление листа с id ${request.params.id}`,
-    });
+    this.db.deleteItem(request.params.id, 'lists');
+
+    response.send('success');
   }
 
   getTaskById(request, response) {
+    const result = this.db.getItemById(request.params.id, 'tasks');
+
     response.send({
-      message: `Запрос на получение задачи с id ${request.params.id}`,
+      list: result,
     });
   }
 
   createTask(request, response) {
-    // const id = crypto.randomBytes(16).toString("hex");
+    const { text, listId } = request.body;
 
-    response.send({
-      message: `Запрос на создание задачи с текстом ${request.body.text}`,
-    });
+    if (!text || !text.length || !listId || !listId.length) {
+      throw createError(400, 'Required field is not filled');
+    }
+    if (typeof (text) !== 'string' || typeof (listId) !== 'string') {
+      throw createError(400, 'Invalid data type');
+    }
+
+    const currentDate = new Date().toString();
+    const id = crypto.randomBytes(16).toString('hex');
+
+    this.db.addItem([id, text, false, listId, currentDate, currentDate], 'tasks');
+
+    response.send('success');
   }
 
   editTask(request, response) {
-    response.send({
-      message: `Запрос на редактирование задачи с id ${request.params.id}`,
-    });
+    const { id } = request.params;
+    const { text, done } = request.body;
+
+    if ((!id || !id.length)) {
+      throw createError(400, 'Missing identifier');
+    }
+
+    if ((!text || !text.length)) {
+      throw createError(400, 'There is no data');
+    }
+
+    if ((text && (typeof (text) !== 'string')) || (done !== undefined && (typeof (done) !== 'boolean'))) {
+      throw createError(400, 'Invalid data type');
+    }
+
+    const currentDate = new Date().toString();
+
+    this.db.editItemById(
+        id, [
+          text && ['text', text],
+          (done !== undefined) && ['done', done],
+          ['dateUpdate', currentDate],
+        ], 'tasks');
+
+    response.send('success');
   }
 
   deleteTask(request, response) {
-    response.send({
-      message: `Запрос на удаление задачи с id ${request.params.id}`,
-    });
+    this.db.deleteItem(request.params.id, 'tasks');
+
+    response.send('success');
   }
 }
 

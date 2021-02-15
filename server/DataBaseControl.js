@@ -15,6 +15,10 @@ class DataBaseControl {
     return this.alasql(`SELECT * FROM ${table} WHERE id = '${id}'`);
   }
 
+  getItemsByFieldValue(field, value, table) {
+    return this.alasql(`SELECT * FROM ${table} WHERE ${field} = '${value}'`);
+  }
+
   addItem(values, table) {
     this.alasql(`INSERT INTO ${table} VALUES (${values.map((item) => {
       if (typeof (item) === 'string') {
