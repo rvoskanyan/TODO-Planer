@@ -1,8 +1,10 @@
 import Postman from "./Postman";
 import LsControl from "./LsControl";
 
-export default class DateController {
+export default class DataController {
     constructor(worker) {
+        this.worker = worker;
+
         switch (worker) {
             case 'server': {
                 this.doer = new Postman('http://localhost:3000', '/api/');
@@ -14,11 +16,11 @@ export default class DateController {
             }
         }
 
-        if (!DateController._instance) {
-            DateController._instance = this;
+        if (!DataController._instance) {
+            DataController._instance = this;
         }
 
-        return DateController._instance;
+        return DataController._instance;
     }
 
     static getInstance() {

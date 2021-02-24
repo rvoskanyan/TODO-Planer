@@ -23,8 +23,10 @@ export default class Postman {
     });
   }
 
-  delete(apiMethod) {
-
+  delete(apiMethod, data) {
+    return this.send(`${apiMethod}/${data}`, {
+      method: 'delete'
+    })
   }
 
   send(apiMethod, options) {
@@ -36,12 +38,11 @@ export default class Postman {
   }
 
   parseQueryString(data) {
-    let queryString = '?';
+    const values = Object.values(data);
 
-    for (const key in data) {
-      queryString = `${queryString}${key}=${data[key]}&`;
-    }
-
-    return queryString.slice(0, -1);
+    return `?${Object.keys(data).map((
+        item, 
+        index
+    ) => `${item}=${encodeURIComponent(values[index].toString())}`).join('&')}`;
   }
 }

@@ -1,12 +1,43 @@
 import LsControl from './LsControl';
 import TodoList from './TodoList';
 import Postman from './Postman';
+import Router from "./Router";
 
 import '../styles/main.scss';
 
 const lsControl = new LsControl();
 const arrayInitElements = document.querySelectorAll('.todo-list-init');
-const tasks = lsControl.getListTasks();
+const router = new Router({
+  mode: 'history',
+  root: '/'
+});
+
+router
+    .add(/listTasks\/(.*)/, (id) => {
+      console.log(`tasks of list: ${id}`);
+    })
+    .add(/editList\/(.*)/, (id) => {
+      console.log(`edit todo list: ${id}`);
+    })
+    .add('', () => {
+      console.log('lists');
+    });
+
+/*String.prototype.hashCode = function() {
+  let hash = 0, i, chr;
+
+  if (this.length === 0) {
+    return hash;
+  }
+
+  for (i = 0; i < this.length; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  return hash;
+};
 
 arrayInitElements.forEach((node) => {
   const postman = new Postman('http://localhost:3000', '/api/');
@@ -46,4 +77,4 @@ arrayInitElements.forEach((node) => {
   const todoList = new TodoList({ tasks }, nodeDubl.querySelector('.todo-list-init-content'), lsControl, node, postman);
 
   nodeDubl.querySelector('.todo-list-init-content-add-button').addEventListener('click', todoList.addTask.bind(todoList));
-});
+});*/

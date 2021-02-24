@@ -14,55 +14,97 @@ export default class LsControl {
     return this._instance;
   }
 
-  getDataByLsKey(key) {
-    if (this.requestedData[key]) {
-      return this.requestedData[key];
+  getDataByLsKey(lsKey) {
+    return this.requestedData[lsKey] ?
+        this.requestedData[lsKey] :
+        this.requestedData[lsKey] = this.parseState(localStorage.getItem(lsKey), 'from')
+  }
+
+  getItemByFieldValue(field, value, lsKey) {
+    if(!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if(result) {
+        this.requestedData[lsKey] = result;
+      }
+
+      return undefined;
     }
 
-    return this.requestedData[key] = this.parseState(localStorage.getItem(key), 'from');
+    return this.requestedData[lsKey].filter((item) => item[field] === value)
   }
 
-  getItemByField(field, value, lsKey) {
+  createItem(dataItem, lsKey) {
+    if (!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if (result) {
+        this.requestedData[lsKey] = result;
+      }
 
+      return undefined;
+    }
+
+    const date = new Date().toString();
+
+    this.requestedData[lsKey].push({
+      ...dataItem,
+      id: date.hashCode(),
+      dateCreate: date,
+      dateUpdate: date
+    });
+    this.updateLs(lsKey);
+
+    return this.requestedData[lsKey].id;
   }
 
-  createItem(data, lsKey) {
+  updateItem(dataItem, lsKey) {
+    if (!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if (result) {
+        this.requestedData[lsKey] = result;
+      }
 
+      return undefined;
+    }
+
+    const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === dataItem.id);
+
+    if (indexItem === undefined) {
+      return 'error';
+    }
+
+    this.requestedData[lsKey][indexItem] = {
+      ...this.requestedData[lsKey][indexItem],
+      ...dataItem,
+      dateUpdate: new Date().toString()
+    };
+    this.updateLs(lsKey);
+
+    return 'success';
   }
 
-  updateItem(data, lsKey) {
+  deleteItem(idItem, lsKey) {
+    if (!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if (result) {
+        this.requestedData[lsKey] = result;
+      }
 
+      return undefined;
+    }
+
+    const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === idItem);
+
+    if (indexItem === undefined) {
+      return 'error';
+    }
+
+    this.requestedData[lsKey].splice(indexItem, 1);
+
+    return 'success'
   }
 
-  deleteItem(id, lsKey) {
-
-  }
-
-  getCurrentState() {
-    const state = this.parseState(localStorage.getItem(lsKeyApp), 'from');
-
-    if (state) return state;
-
-    this.initialStartState();
-
-    return this.getCurrentState();
-  }
-
-  initialStartState() {
-    localStorage.setItem(lsKeyApp, this.parseState({
-      date: new Date(),
-      tasks: [],
-      nextId: 1,
-    }, 'to'));
-  }
-
-  getDate() {
-    return this.date ? this.date : new Date();
-  }
-
-  setDate(date) {
-    this.date = date;
-    this.updateLs();
+  updateLs(lsKey) {
+    localStorage.setItem(lsKey, this.parseState(this.requestedData[lsKey], 'to'));
   }
 
   parseState(state, direction) {
@@ -72,40 +114,9 @@ export default class LsControl {
     return state;
   }
 
-  updateLs(lsKey) {
-    localStorage.setItem(lsKey, this.parseState(this.requestedData[lsKey], 'to'));
-  }
+  createCell(lsKey, data = []) {
+    localStorage.setItem(lsKey, this.parseState(data, 'to'));
 
-  getListTasks() {
-    return this.tasks.map((elem) => ({ ...elem }));
-  }
-
-  addTask(task) {
-    const newTask = {
-      ...task,
-      id: this.nextId,
-    };
-
-    this.tasks.push(newTask);
-    this.nextId++;
-
-    this.updateLs();
-
-    return newTask.id;
-  }
-
-  deleteTask(id) {
-    this.tasks.splice(this.tasks.findIndex((item) => item.id === id), 1);
-    this.updateLs();
-  }
-
-  editTask(task) {
-    const index = this.tasks.findIndex((item) => item.id === task.id);
-
-    this.tasks[index] = {
-      ...this.tasks[index],
-      ...task,
-    };
-    this.updateLs();
+    return 'success';
   }
 }
