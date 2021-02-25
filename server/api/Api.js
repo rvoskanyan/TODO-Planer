@@ -46,9 +46,11 @@ class Api {
   getListById(request, response) {
     const result = this.db.getItemById(request.params.id, 'lists');
 
-    response.send({
-      list: result,
-    });
+    setTimeout(() => {
+      response.send({
+        list: result,
+      });
+    }, 500);
   }
 
   getTaskListById(request, response) {

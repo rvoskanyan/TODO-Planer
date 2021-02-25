@@ -1,7 +1,7 @@
 import DataController from './DataController';
 import Task from './Task';
 import { Messages, SystemConstant, TypeEvents } from './constants';
-import { getAddButton } from './utils';
+import {getAddButton, getSaveButton} from './utils';
 
 export default class TodoList {
   constructor(id, node, elem = {}, handleDeleteList = undefined) {
@@ -44,12 +44,55 @@ export default class TodoList {
   }
 
   renderEdit() {
-    const newWrapper = document.createElement('div');
-    const wrapper = this.contentNode.querySelector('.wrapper');
+    const div = document.createElement('div');
+    const input = document.createElement('input');
 
-    newWrapper.classList.add('list__content', 'wrapper');
-    newWrapper.innerText = `Редактирование листа c id: ${this.id}`;
-    wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+    div.className = 'item-content';
+
+    input.classList.add('item-content__input', 'input', 'init-todo-edit-name-list');
+
+    div.prepend(input);
+
+    this.appendNodeTask(div);
+
+    this.node.querySelector('.todo-list-init-control').append(getSaveButton(this.saveChangeList));
+
+    this.dataController.getListById(this.id).then((result) => {
+      const dateNode = this.node.querySelector('.todo-list-init-date');
+
+      this.elem = result;
+
+      input.value = result.name;
+      input.focus();
+
+      dateNode.valueAsDate = new Date(result.date);
+    })
+  }
+
+  saveChangeList = () => {
+    let name = this.node.querySelector('.init-todo-edit-name-list').value;
+
+    const newDate = new Date(this.node.querySelector('.todo-list-init-date').value);
+    const currentDate = new Date(this.elem.date);
+
+    if (
+        currentDate.getDate() !== newDate.getDate() ||
+        currentDate.getMonth() !== newDate.getMonth() ||
+        currentDate.getFullYear() !== newDate.getFullYear()
+    ) {
+      name = `${`0${newDate.getDate()}`.slice(-2)}.${`0${newDate.getMonth() + 1}`.slice(-2)}.${newDate.getFullYear()}`
+
+      this.dataController.updateList({ id: this.id, name, date: newDate.toString() });
+
+      return document.location.href = '/';
+    }
+
+    if (name !== this.elem.name) {
+      this.dataController.updateList({ id: this.id, name, date: newDate.toString() })
+      return document.location.href = '/';
+    }
+
+    return document.location.href = '/';
   }
 
   getNode() {

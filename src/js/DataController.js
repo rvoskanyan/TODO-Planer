@@ -49,8 +49,24 @@ export default class DataController {
     }
   }
 
-  getListById() {
+  getListById(id) {
+    switch (this.worker) {
+      case 'server': {
+        loading(true);
 
+        return this.doer.get(`list/${id}`)
+            .then((result) => {
+              loading(false);
+
+              return result.list[0];
+            });
+      }
+      case 'locale': {
+        this.doer = new LsControl();
+        break;
+      }
+      default: break;
+    }
   }
 
   getTasksByListId(listId) {
@@ -92,8 +108,23 @@ export default class DataController {
     }
   }
 
-  updateList() {
+  updateList(list) {
+    switch (this.worker) {
+      case 'server': {
+        loading(true);
 
+        return this.doer.put(`list/${list.id}`, list).then((result) => {
+          loading(false);
+
+          return result;
+        });
+      }
+      case 'locale': {
+        this.doer = new LsControl();
+        break;
+      }
+      default: break;
+    }
   }
 
   deleteList(id) {

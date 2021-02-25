@@ -72,7 +72,7 @@ class Lists {
   		const date = new Date();
   		const name = `${`0${date.getDate()}`.slice(-2)}.${`0${date.getMonth() + 1}`.slice(-2)}.${date.getFullYear()}`;
 
-  		this.dataController.createList(name, date)
+  		this.dataController.createList(name, date.toString())
 					.then((id) => {
 							const newList = { id, name };
 

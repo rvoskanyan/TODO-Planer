@@ -75,3 +75,16 @@ export function getAddButton(handler) {
 
   return button;
 }
+
+export function getSaveButton(handler) {
+  const button = document.createElement('button');
+  const icon = document.createElement('i');
+
+  icon.classList.add('control__icon', 'icon', 'icon-list-save');
+
+  button.classList.add('control__button', 'control__button_save', 'button', 'todo-list-init-content-save-button');
+  button.addEventListener('click', handler);
+  button.append(icon);
+
+  return button;
+}
