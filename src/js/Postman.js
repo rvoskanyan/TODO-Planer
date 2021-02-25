@@ -25,8 +25,8 @@ export default class Postman {
 
   delete(apiMethod, data) {
     return this.send(`${apiMethod}/${data}`, {
-      method: 'delete'
-    })
+      method: 'delete',
+    });
   }
 
   send(apiMethod, options) {
@@ -41,8 +41,8 @@ export default class Postman {
     const values = Object.values(data);
 
     return `?${Object.keys(data).map((
-        item, 
-        index
+      item,
+      index,
     ) => `${item}=${encodeURIComponent(values[index].toString())}`).join('&')}`;
   }
 }

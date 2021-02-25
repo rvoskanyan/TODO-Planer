@@ -1,7 +1,7 @@
 import LsControl from './LsControl';
 import TodoList from './TodoList';
 import Postman from './Postman';
-import Router from "./Router";
+import Router from './Router';
 
 import '../styles/main.scss';
 
@@ -9,21 +9,21 @@ const lsControl = new LsControl();
 const arrayInitElements = document.querySelectorAll('.todo-list-init');
 const router = new Router({
   mode: 'history',
-  root: '/'
+  root: '/',
 });
 
 router
-    .add(/listTasks\/(.*)/, (id) => {
-      console.log(`tasks of list: ${id}`);
-    })
-    .add(/editList\/(.*)/, (id) => {
-      console.log(`edit todo list: ${id}`);
-    })
-    .add('', () => {
-      console.log('lists');
-    });
+  .add(/listTasks\/(.*)/, (id) => {
+    console.log(`tasks of list: ${id}`);
+  })
+  .add(/editList\/(.*)/, (id) => {
+    console.log(`edit todo list: ${id}`);
+  })
+  .add('', () => {
+    console.log('lists');
+  });
 
-/*String.prototype.hashCode = function() {
+/* String.prototype.hashCode = function() {
   let hash = 0, i, chr;
 
   if (this.length === 0) {
@@ -77,4 +77,4 @@ arrayInitElements.forEach((node) => {
   const todoList = new TodoList({ tasks }, nodeDubl.querySelector('.todo-list-init-content'), lsControl, node, postman);
 
   nodeDubl.querySelector('.todo-list-init-content-add-button').addEventListener('click', todoList.addTask.bind(todoList));
-});*/
+}); */
