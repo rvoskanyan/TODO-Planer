@@ -20,7 +20,7 @@ export default class LsControl {
         this.requestedData[lsKey] = this.parseState(localStorage.getItem(lsKey), 'from')
   }
 
-  getItemByFieldValue(field, value, lsKey) {
+  getItemsByFieldValue(field, value, lsKey) {
     if(!this.requestedData[lsKey]) {
       const result = this.parseState(localStorage.getItem(lsKey), 'from')
       if(result) {

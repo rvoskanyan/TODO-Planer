@@ -31,7 +31,7 @@ class DataBaseControl {
 
   editItemById(id, values, table) {
     this.alasql(`UPDATE ${table} SET ${values.filter((item) => item && Array.isArray(item)).map((item) => item.map((field, index) => {
-      if (index === 1) {
+      if (index === 1 && typeof (field) === 'string') {
         return `'${field}'`;
       }
 
@@ -40,7 +40,7 @@ class DataBaseControl {
   }
 
   deleteItem(id, table) {
-    this.alasql(`DELETE FROM ${table} WHERE id = ${id}`);
+    this.alasql(`DELETE FROM ${table} WHERE id = '${id}'`);
   }
 
   createTable(table, fields) {

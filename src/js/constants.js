@@ -11,6 +11,7 @@ export const TypeEvents = {
 
 export const Messages = {
   NO_TASKS: 'Задачи не найдены',
+  NO_LISTS: 'Списки задач не найдены',
   ERROR_ID: 'Ошибка идентификатора!',
   ELEMENT_NOT_FOUND: 'Элемент не найден!',
   ERROR_DATA: 'Ошибка данных!',

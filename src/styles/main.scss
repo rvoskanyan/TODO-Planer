@@ -40,6 +40,10 @@
   animation-delay: -1s;
 }
 
+.preloader.loaded {
+  display: none;
+}
+
 @keyframes preloader-rotate {
   100% {
     transform: rotate(360deg);

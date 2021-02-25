@@ -1,29 +1,18 @@
+import DataController from './DataController';
 import Task from './Task';
-import { Messages, SystemConstant } from './constants';
+import { Messages, SystemConstant, TypeEvents } from './constants';
+import { getAddButton } from './utils';
 
 export default class TodoList {
-  constructor(state, node, lsControl, childNode, postman) {
+  constructor(id, node, elem = {}, handleDeleteList = undefined) {
+    this.id = id;
+    this.elem = elem;
     this.node = node;
-    this.childNode = childNode;
-    this.lsControl = lsControl;
-    this.tasks = state.tasks;
+    this.contentNode = this.node.querySelector('.todo-list-init-content');
     this.examplesTasks = [];
-    this.nodesTasks = [];
-    this.postman = postman;
-
-    this.createTasks();
-    this.renderList();
-    this.initDate();
-
-    postman.put('list/884caac808cd269a8b1456ab92669ee5', {
-      date: new Date().toString(),
-    });
-  }
-
-  set testQueryTasks(value) {
-    console.log(`Перерисовываем список задач с новыми данными: '${value.message}'`);
-
-    return true;
+    this.dataController = new DataController();
+    this.tasks = [];
+    this.handleDeleteList = handleDeleteList;
   }
 
   createTasks() {
@@ -33,7 +22,7 @@ export default class TodoList {
       this.tasks.forEach((elem) => {
         this.examplesTasks.push(new Task(
           elem,
-          this.node,
+          this.contentNode,
           {
             toggleStatus: this.toggleStatus.bind(this),
             deleteTask: this.deleteTask.bind(this),
@@ -54,31 +43,87 @@ export default class TodoList {
     });
   }
 
-  renderList() {
-    const noTasks = document.createElement('div');
-    const wrapper = this.node.querySelector('.wrapper');
+  renderEdit() {
     const newWrapper = document.createElement('div');
-
-    noTasks.innerText = Messages.NO_TASKS;
-    this.noTasks = noTasks;
-    this.nodesTasks = [];
+    const wrapper = this.contentNode.querySelector('.wrapper');
 
     newWrapper.classList.add('list__content', 'wrapper');
-    wrapper ? wrapper.replaceWith(newWrapper) : this.node.append(newWrapper);
+    newWrapper.innerText = `Редактирование листа c id: ${this.id}`;
+    wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+  }
 
-    if (!this.examplesTasks.length) {
-      return this.appendNodeTask(this.noTasks);
-    }
+  getNode() {
+    const div = document.createElement('div');
+    const marker = document.createElement('div');
+    const divControls = document.createElement('div');
+    const input = document.createElement('div');
+    const iconDelete = document.createElement('i');
+    const buttonDelete = document.createElement('button');
+    const link = document.createElement('a');
+    const buttonEdit = document.createElement('a');
+    const iconEdit = document.createElement('i');
 
-    return this.examplesTasks.forEach((elem) => {
-      const taskNode = elem.getNode();
+    div.className = 'item-content';
 
-      if (elem.edit) {
-        elem.setFocus();
+    divControls.classList.add('content__control', 'inner-control');
+
+    input.classList.add('item-content__input', 'input');
+
+    iconDelete.classList.add('icon', 'icon-trash');
+
+    buttonDelete.classList.add('inner-control__button', 'button');
+    buttonDelete.addEventListener('click', () => this.handleDeleteList(this.id));
+    buttonDelete.append(iconDelete);
+
+    link.href = `/listTasks/${this.elem.id}`;
+    link.text = this.elem.name;
+    input.append(link);
+
+    iconEdit.classList.add('icon', 'icon-pencil');
+
+    buttonEdit.classList.add('inner-control__button', 'button');
+    buttonEdit.href = `/editList/${this.elem.id}`;
+    buttonEdit.append(iconEdit);
+
+    divControls.append(buttonEdit);
+    divControls.append(buttonDelete);
+
+    marker.classList.add('marker');
+    div.prepend(input);
+    div.append(divControls);
+    div.append(marker);
+
+    this.node = div;
+
+    return div;
+  }
+
+  renderTasks() {
+    const newWrapper = document.createElement('div');
+    const wrapper = this.contentNode.querySelector('.wrapper');
+
+    newWrapper.classList.add('list__content', 'wrapper');
+    newWrapper.innerText = Messages.NO_TASKS;
+    wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+
+    this.node.querySelector('.todo-list-init-control').append(getAddButton(() => this.addTask()));
+
+    this.dataController.getTasksByListId(this.id).then((result) => {
+      if (result.length) {
+        newWrapper.remove();
+
+        this.tasks = result;
+        this.createTasks();
+        this.examplesTasks.forEach((elem) => {
+          const taskNode = elem.getNode();
+
+          if (elem.edit) {
+            elem.setFocus();
+          }
+
+          this.appendNodeTask(taskNode);
+        });
       }
-
-      this.appendNodeTask(taskNode);
-      this.nodesTasks.push(taskNode);
     });
   }
 
@@ -94,7 +139,7 @@ export default class TodoList {
     newWrapper.classList.add('list__content', 'wrapper');
     newWrapper.append(node);
 
-    return this.node.append(newWrapper);
+    return this.contentNode.append(newWrapper);
   }
 
   addTask() {
@@ -104,15 +149,12 @@ export default class TodoList {
       done: false,
       edit: true,
     };
-    const newTasks = [...this.tasks];
 
-    newTasks.push(newTask);
-
-    this.tasks = newTasks;
+    this.tasks.push(newTask);
 
     const newTaskExample = new Task(
       newTask,
-      this.node,
+      this.contentNode,
       {
         toggleStatus: this.toggleStatus.bind(this),
         deleteTask: this.deleteTask.bind(this),
@@ -125,17 +167,15 @@ export default class TodoList {
 
     const taskNode = newTaskExample.getNode();
 
-    this.nodesTasks.push(taskNode);
+    if (this.tasks.length === 1) {
+      this.contentNode.querySelector('.wrapper').remove();
+    }
 
     this.appendNodeTask(taskNode);
     newTaskExample.setFocus();
   }
 
   toggleStatus(id) {
-    if (!Number.isInteger(id)) {
-      return console.error(Messages.ERROR_ID);
-    }
-
     const index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -149,17 +189,14 @@ export default class TodoList {
     examplesCurrentTask.done = dataCurrentTask.done;
     examplesCurrentTask.toggleClassStatus();
 
-    return this.lsControl.editTask({
+    this.dataController.updateTask({
       id,
+      text: dataCurrentTask.text,
       done: dataCurrentTask.done,
     });
   }
 
   deleteTask(id) {
-    if (!Number.isInteger(id)) {
-      return console.error(Messages.ERROR_ID);
-    }
-
     const index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -167,18 +204,23 @@ export default class TodoList {
     }
     this.tasks.splice(index, 1);
     this.examplesTasks[index].node.remove();
+
+    if (!this.tasks.length) {
+      const newWrapper = document.createElement('div');
+      const wrapper = this.contentNode.querySelector('.wrapper');
+
+      newWrapper.classList.add('list__content', 'wrapper');
+      newWrapper.innerText = Messages.NO_TASKS;
+      wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+    }
+
     delete this.examplesTasks[index];
     this.examplesTasks.splice(index, 1);
-    this.nodesTasks.splice(index, 1);
 
-    return this.lsControl.deleteTask(id);
+    this.dataController.deleteTask(id);
   }
 
   editTask(id) {
-    if (!Number.isInteger(id)) {
-      return console.error(Messages.ERROR_ID);
-    }
-
     const index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -199,42 +241,41 @@ export default class TodoList {
   }
 
   saveChangeTask(task) {
-    if ((!Number.isInteger(task.id) && task.id !== SystemConstant.NEW_TASK_ID) || typeof (task.text) !== 'string') {
+    if ((!task.id && task.id !== SystemConstant.NEW_TASK_ID) || typeof (task.text) !== 'string') {
       return console.error(Messages.ERROR_DATA);
     }
     if (
       task.id === SystemConstant.NEW_TASK_ID
-            && this.tasks[this.tasks.length - 1].id === SystemConstant.NEW_TASK_ID
+        && this.tasks[this.tasks.length - 1].id === SystemConstant.NEW_TASK_ID
     ) {
       if (task.text === '') {
-        this.nodesTasks[this.nodesTasks.length - 1].remove();
+        this.examplesTasks[this.examplesTasks.length - 1].node.remove();
         delete this.examplesTasks[this.examplesTasks.length - 1];
-        this.examplesTasks = this.examplesTasks.splice(this.examplesTasks.length - 1, 1);
-        this.nodesTasks = this.nodesTasks.splice(this.examplesTasks.length - 1, 1);
+        this.examplesTasks.splice(this.examplesTasks.length - 1, 1);
+        this.tasks.splice(this.tasks.length - 1, 1);
+
+        if (!this.tasks.length) {
+          const newWrapper = document.createElement('div');
+          const wrapper = this.contentNode.querySelector('.wrapper');
+
+          newWrapper.classList.add('list__content', 'wrapper');
+          newWrapper.innerText = Messages.NO_TASKS;
+          wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+        }
 
         return false;
       }
 
-      const idNewTask = this.lsControl.addTask({
-        text: task.text,
-        done: false,
+      this.dataController.createTask(this.id, task.text).then((idNewTask) => {
+        this.tasks[this.tasks.length - 1].id = idNewTask;
+        this.tasks[this.tasks.length - 1].text = task.text;
+        this.examplesTasks[this.examplesTasks.length - 1].updateDataTask({
+          id: idNewTask,
+          text: task.text,
+          done: false,
+          edit: false,
+        });
       });
-
-      this.tasks[this.tasks.length - 1].id = idNewTask;
-      this.tasks[this.tasks.length - 1].text = task.text;
-      this.examplesTasks[this.examplesTasks.length - 1].updateDataTask({
-        id: idNewTask,
-        text: task.text,
-        done: false,
-        edit: false,
-      });
-
-      const newNodeTask = this.examplesTasks[this.examplesTasks.length - 1].getNode();
-
-      this.nodesTasks[this.nodesTasks.length - 1].replaceWith(newNodeTask);
-      this.nodesTasks[this.nodesTasks.length - 1] = newNodeTask;
-
-      return true;
     }
 
     const index = this.tasks.findIndex((item) => item.id === task.id);
@@ -281,7 +322,7 @@ export default class TodoList {
 
     oldNode.replaceWith(newNode);
 
-    return this.lsControl.editTask({
+    this.dataController.updateTask({
       ...task,
       done: false,
     });

@@ -23,6 +23,11 @@ export default class Task {
     this.text = task.text;
     this.done = task.done;
     this.edit = task.edit;
+
+    const oldNode = this.node;
+
+    this.getNode();
+    oldNode.replaceWith(this.node);
   }
 
   getNode() {
@@ -55,7 +60,7 @@ export default class Task {
 
       input.innerText = this.text;
       input.onclick = () => {
-        if (document.getSelection().type === TypeEvents.RANGE) return;
+        if (document.getSelection().type === TypeEvents.RANGE) { return; }
         this.handleClickTask();
       };
 
@@ -79,6 +84,7 @@ export default class Task {
         if (e.key === TypeEvents.ENTER) {
           this.handleBlur(input);
         }
+
         return false;
       });
     }
@@ -124,6 +130,7 @@ export default class Task {
 
   handleBlur(node) {
     const text = node.innerText;
+
     this.text = text;
 
     this.saveChangeTask({

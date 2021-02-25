@@ -36,9 +36,11 @@ class Api {
   getList(request, response) {
     const result = this.db.getItems('lists');
 
-    response.send({
-      list: result,
-    });
+    setTimeout(() => {
+      response.send({
+        list: result,
+      });
+    }, 500);
   }
 
   getListById(request, response) {
@@ -52,9 +54,11 @@ class Api {
   getTaskListById(request, response) {
     const result = this.db.getItemsByFieldValue('listId', request.params.id, 'tasks');
 
-    response.send({
-      list: result,
-    });
+    setTimeout(() => {
+      response.send({
+        list: result,
+      });
+    }, 500);
   }
 
   createList(request, response) {
@@ -72,7 +76,9 @@ class Api {
 
     this.db.addItem([id, name, date, currentDate, currentDate], 'lists');
 
-    response.send('success');
+    setTimeout(() => {
+      response.send({ id });
+    }, 500);
   }
 
   editList(request, response) {
@@ -101,7 +107,9 @@ class Api {
   deleteList(request, response) {
     this.db.deleteItem(request.params.id, 'lists');
 
-    response.send('success');
+    setTimeout(() => {
+      response.send({ message: 'success' });
+    }, 500);
   }
 
   getTaskById(request, response) {
@@ -127,7 +135,9 @@ class Api {
 
     this.db.addItem([id, text, false, listId, currentDate, currentDate], 'tasks');
 
-    response.send('success');
+    setTimeout(() => {
+      response.send({ id });
+    }, 500);
   }
 
   editTask(request, response) {
@@ -149,19 +159,24 @@ class Api {
     const currentDate = new Date().toString();
 
     this.db.editItemById(
-        id, [
-          text && ['text', text],
-          (done !== undefined) && ['done', done],
-          ['dateUpdate', currentDate],
-        ], 'tasks');
+      id, [
+        text && ['text', text],
+        (done !== undefined) && ['done', done],
+        ['dateUpdate', currentDate],
+      ], 'tasks',
+    );
 
-    response.send('success');
+    setTimeout(() => {
+      response.send({ message: 'success' });
+    }, 500);
   }
 
   deleteTask(request, response) {
     this.db.deleteItem(request.params.id, 'tasks');
 
-    response.send('success');
+    setTimeout(() => {
+      response.send({ message: 'success' });
+    }, 500);
   }
 }
 

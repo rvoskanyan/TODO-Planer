@@ -3,8 +3,8 @@ export default class Postman {
     this.apiUrl = `${url}${prefix}`;
   }
 
-  get(apiMethod, data, meta) {
-    return this.send(`${apiMethod}${data ? `/${data}` : ''}${meta ? this.parseQueryString(meta) : ''}`, {
+  get(apiMethod, data) {
+    return this.send(`${apiMethod}${data ? this.parseQueryString(data) : ''}`, {
       method: 'get',
     });
   }
@@ -23,8 +23,8 @@ export default class Postman {
     });
   }
 
-  delete(apiMethod, data) {
-    return this.send(`${apiMethod}/${data}`, {
+  delete(apiMethod) {
+    return this.send(`${apiMethod}`, {
       method: 'delete',
     });
   }

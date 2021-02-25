@@ -1,3 +1,5 @@
+import { clearSlashes } from './utils';
+
 class Router {
     routes = [];
     mode = null;
@@ -40,17 +42,11 @@ class Router {
         return this;
     };
 
-    clearSlashes = path =>
-        path
-            .toString()
-            .replace(/\/$/, '')
-            .replace(/^\//, '');
-
     getFragment = () => {
         let fragment = '';
 
         if (this.mode === 'history') {
-            fragment = this.clearSlashes(decodeURI(window.location.pathname + window.location.search));
+            fragment = clearSlashes(decodeURI(window.location.pathname + window.location.search));
             fragment = fragment.replace(/\?(.*)$/, '');
             fragment = this.root !== '/' ? fragment.replace(this.root, '') : fragment;
         } else {
@@ -59,12 +55,12 @@ class Router {
             fragment = match ? match[1] : '';
         }
 
-        return this.clearSlashes(fragment);
+        return clearSlashes(fragment);
     };
 
     navigate = (path = '') => {
         if (this.mode === 'history') {
-            window.history.pushState(null, null, this.root + this.clearSlashes(path));
+            window.history.pushState(null, null, this.root + clearSlashes(path));
         } else {
             window.location.href = `${window.location.href.replace(/#(.*)$/, '')}#${path}`;
         }
