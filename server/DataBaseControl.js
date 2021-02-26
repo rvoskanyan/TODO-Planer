@@ -20,23 +20,11 @@ class DataBaseControl {
   }
 
   addItem(values, table) {
-    this.alasql(`INSERT INTO ${table} VALUES (${values.map((item) => {
-      if (typeof (item) === 'string') {
-        return `'${item}'`;
-      }
-
-      return item;
-    }).join(', ')})`);
+    this.alasql(`INSERT INTO ${table} (${this.getStringForInsertFields(values)}) VALUES (${this.getStringForInsertValues(values)})`);
   }
 
   editItemById(id, values, table) {
-    this.alasql(`UPDATE ${table} SET ${values.filter((item) => item && Array.isArray(item)).map((item) => item.map((field, index) => {
-      if (index === 1 && typeof (field) === 'string') {
-        return `'${field}'`;
-      }
-
-      return field;
-    }).join(' = ')).join(', ')} WHERE id = '${id}'`);
+    this.alasql(`UPDATE ${table} SET ${this.getStringForUpdate(values)} WHERE id = '${id}'`);
   }
 
   deleteItem(id, table) {
@@ -44,11 +32,42 @@ class DataBaseControl {
   }
 
   createTable(table, fields) {
-    this.alasql(`CREATE TABLE ${table} (${fields.map((item) => item.join(' ')).join(', ')})`);
+    this.alasql(`CREATE TABLE ${table} (${this.getStringForCreate(fields)})`);
   }
 
   addFieldTable(nameField, type, table) {
     this.alasql(`ALTER TABLE ${table} ADD ${nameField} ${type}`);
+  }
+
+  getStringForInsertFields(values) {
+    return values.map((item) => {
+      return item[0];
+    }).join(', ');
+  }
+
+  getStringForInsertValues(values) {
+    return values.map((item) => {
+      if (typeof item[1] === 'string') {
+        return `'${item[1]}'`;
+      }
+
+      return item[1];
+    }).join(', ');
+  }
+
+  getStringForUpdate(values) {
+    return values.filter((item) => item && Array.isArray(item))
+      .map((item) => item.map((field, index) => {
+        if (index === 1 && typeof field === 'string') {
+          return `'${field}'`;
+        }
+
+        return field;
+      }).join(' = ')).join(', ');
+  }
+
+  getStringForCreate(fields) {
+    return fields.map((item) => item.join(' ')).join(', ');
   }
 }
 

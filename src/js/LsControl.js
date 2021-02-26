@@ -1,4 +1,4 @@
-import { lsKeyApp } from './constants';
+import { lsKeyApp, resultMessages } from './constants';
 
 export default class LsControl {
   requestedData = {}
@@ -21,9 +21,9 @@ export default class LsControl {
   }
 
   getItemsByFieldValue(field, value, lsKey) {
-    if(!this.requestedData[lsKey]) {
+    if (!this.requestedData[lsKey]) {
       const result = this.parseState(localStorage.getItem(lsKey), 'from')
-      if(result) {
+      if (result) {
         this.requestedData[lsKey] = result;
       }
 
@@ -69,7 +69,7 @@ export default class LsControl {
     const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === dataItem.id);
 
     if (indexItem === undefined) {
-      return 'error';
+      return resultMessages.error;
     }
 
     this.requestedData[lsKey][indexItem] = {
@@ -79,7 +79,7 @@ export default class LsControl {
     };
     this.updateLs(lsKey);
 
-    return 'success';
+    return resultMessages.success;
   }
 
   deleteItem(idItem, lsKey) {
@@ -95,12 +95,12 @@ export default class LsControl {
     const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === idItem);
 
     if (indexItem === undefined) {
-      return 'error';
+      return resultMessages.error;
     }
 
     this.requestedData[lsKey].splice(indexItem, 1);
 
-    return 'success'
+    return resultMessages.success;
   }
 
   updateLs(lsKey) {
@@ -108,8 +108,13 @@ export default class LsControl {
   }
 
   parseState(state, direction) {
-    if (direction === 'from') return JSON.parse(state);
-    if (direction === 'to') return JSON.stringify(state);
+    if (direction === 'from') {
+      return JSON.parse(state);
+    }
+
+    if (direction === 'to') {
+      return JSON.stringify(state);
+    }
 
     return state;
   }
@@ -117,6 +122,6 @@ export default class LsControl {
   createCell(lsKey, data = []) {
     localStorage.setItem(lsKey, this.parseState(data, 'to'));
 
-    return 'success';
+    return resultMessages.success;
   }
 }

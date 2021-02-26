@@ -1,7 +1,6 @@
-import { Messages, SystemConstant } from './constants';
+import { Messages } from './constants';
 import { getAddButton } from './utils';
-import DataController from './DataController';
-import Task from './Task';
+import DataController from './workerService/DataController';
 import TodoList from './TodoList';
 
 class Lists {
@@ -11,6 +10,10 @@ class Lists {
     this.dataController = new DataController();
 	  this.examplesLists = [];
 	  this.lists = [];
+
+	  if (!this.contentNode) {
+	  		return undefined;
+		}
 
     this.renderLists();
   }
@@ -31,14 +34,19 @@ class Lists {
   renderLists = () => {
 			const newWrapper = document.createElement('div');
 			const wrapper = this.contentNode.querySelector('.wrapper');
+			const control = this.node.querySelector('.todo-list-init-control')
+
+			if (!control) {
+					return undefined;
+			}
 
 			newWrapper.classList.add('list__content', 'wrapper');
 			newWrapper.innerText = Messages.NO_LISTS;
 			wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
 
-			this.node.querySelector('.todo-list-init-control').append(getAddButton(() => this.addList()));
+			control.append(getAddButton(() => this.addList()));
 
-			this.dataController.getLists().then((result) => {
+			this.dataController.worker.worker.getLists().then((result) => {
 					if (result) {
 							newWrapper.remove();
 
@@ -72,7 +80,7 @@ class Lists {
   		const date = new Date();
   		const name = `${`0${date.getDate()}`.slice(-2)}.${`0${date.getMonth() + 1}`.slice(-2)}.${date.getFullYear()}`;
 
-  		this.dataController.createList(name, date.toString())
+  		this.dataController.worker.createList(name, date.toString())
 					.then((id) => {
 							const newList = { id, name };
 
@@ -90,7 +98,13 @@ class Lists {
 							const listNode = newListExample.getNode();
 
 							if (this.lists.length === 1) {
-									this.contentNode.querySelector('.wrapper').remove();
+									const wrapper = this.contentNode.querySelector('.wrapper');
+
+									if (!wrapper) {
+											return undefined;
+									}
+
+									wrapper.remove();
 							}
 
 							this.appendNodeTask(listNode);
@@ -118,7 +132,7 @@ class Lists {
 				delete this.examplesLists[index];
 				this.examplesLists.splice(index, 1);
 
-				this.dataController.deleteList(id);
+				this.dataController.worker.deleteList(id);
 		}
 }
 

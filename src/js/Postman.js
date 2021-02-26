@@ -30,11 +30,15 @@ export default class Postman {
   }
 
   send(apiMethod, options) {
-    return fetch(`${this.apiUrl}${apiMethod}`, {
-      headers: { 'Content-Type': 'application/json' },
-      mode: 'cors',
-      ...options,
-    }).then((response) => response.json());
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(
+        fetch(`${this.apiUrl}${apiMethod}`, {
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          ...options,
+        }).then((response) => response.json()),
+      ), 500);
+    });
   }
 
   parseQueryString(data) {

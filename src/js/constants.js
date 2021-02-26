@@ -17,3 +17,17 @@ export const Messages = {
   ERROR_DATA: 'Ошибка данных!',
   NOT_SAVE: 'Элемент не найден, данные не сохранены!',
 };
+
+export const API_PREFIX = '/api/';
+export const SERVER_ADDRESS = 'http://localhost:3000';
+
+export const workers = {
+  server: 'server',
+  locale: 'locale',
+  notFound: 'unknown worker',
+};
+
+export const resultMessages = {
+  success: 'success',
+  error: 'error',
+};

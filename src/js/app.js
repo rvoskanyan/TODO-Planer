@@ -2,12 +2,13 @@ import Lists from './Lists';
 import TodoList from './TodoList';
 import Router from './Router';
 import { renderFrame } from './utils';
-import DataController from './DataController';
+import DataController from './workerService/DataController';
 
 import '../styles/main.scss';
+import { workers } from './constants';
 
 const arrayInitElements = document.querySelectorAll('.todo-list-init');
-const dataController = new DataController('server');
+const dataController = new DataController(workers.server);
 
 const router = new Router({
   mode: 'history',
@@ -16,6 +17,14 @@ const router = new Router({
 
 const exampleTodoList = [];
 const exampleLists = [];
+
+Date.prototype.toObject = function () {
+  return {
+    date: `0${this.getDate()}`.slice(-2),
+    month: `0${this.getMonth()}`.slice(-2),
+    year: this.getFullYear(),
+  };
+};
 
 router
   .add(/listTasks\/(.*)/, (id) => {

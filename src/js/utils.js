@@ -56,6 +56,10 @@ export function clearSlashes(path) {
 export function loading(state = false) {
   const preloader = document.querySelector('.preloader');
 
+  if (!preloader) {
+    return undefined;
+  }
+
   if (state) {
     return preloader.classList.remove('loaded');
   }

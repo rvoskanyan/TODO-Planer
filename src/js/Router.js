@@ -26,7 +26,7 @@ class Router {
     };
 
     remove = path => {
-        for (let i = 0; i < this.routes.length; i += 1) {
+        for (let i = 0; i < this.routes.length; i++) {
             if (this.routes[i].path === path) {
                 this.routes.slice(i, 1);
 

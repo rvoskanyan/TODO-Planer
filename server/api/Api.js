@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const createError = require('http-errors');
 
 const DataBaseControl = require('../DataBaseControl');
+const Constants = require('../Constants');
 
 class Api {
   constructor(app) {
@@ -36,82 +37,72 @@ class Api {
   getList(request, response) {
     const result = this.db.getItems('lists');
 
-    setTimeout(() => {
-      response.send({
-        list: result,
-      });
-    }, 500);
+    response.send({
+      list: result,
+    });
   }
 
   getListById(request, response) {
     const result = this.db.getItemById(request.params.id, 'lists');
 
-    setTimeout(() => {
-      response.send({
-        list: result,
-      });
-    }, 500);
+    response.send({
+      list: result,
+    });
   }
 
   getTaskListById(request, response) {
     const result = this.db.getItemsByFieldValue('listId', request.params.id, 'tasks');
 
-    setTimeout(() => {
-      response.send({
-        list: result,
-      });
-    }, 500);
+    response.send({
+      list: result,
+    });
   }
 
   createList(request, response) {
     const { name, date } = request.body;
 
     if (!name || !name.length || !date || !date.length) {
-      throw createError(400, 'Required field is not filled');
+      throw createError(400, Constants.messagesErrorRequest.notFilled);
     }
-    if (typeof (name) !== 'string' || typeof (date) !== 'string') {
-      throw createError(400, 'Invalid data type');
+    if (typeof name !== 'string' || typeof date !== 'string') {
+      throw createError(400, Constants.messagesErrorRequest.invalidData);
     }
 
     const currentDate = new Date().toString();
     const id = crypto.randomBytes(16).toString('hex');
 
-    this.db.addItem([id, name, date, currentDate, currentDate], 'lists');
+    this.db.addItem([['id', id], ['name', name], ['date', date], ['dateCreate', currentDate], ['dateUpdate', currentDate]], 'lists');
 
-    setTimeout(() => {
-      response.send({ id });
-    }, 500);
+    response.send({ id });
   }
 
   editList(request, response) {
     const { id } = request.params;
     const { name, date } = request.body;
 
-    if ((!id || !id.length)) {
-      throw createError(400, 'Missing identifier');
+    if (!id || !id.length) {
+      throw createError(400, Constants.messagesErrorRequest.missingId);
     }
 
     if ((!name || !name.length) && (!date || !date.length)) {
-      throw createError(400, 'There is no data');
+      throw createError(400, Constants.messagesErrorRequest.noData);
     }
 
-    if ((name && (typeof (name) !== 'string')) || (date && (typeof (date) !== 'string'))) {
-      throw createError(400, 'Invalid data type');
+    if ((name && (typeof name !== 'string')) || (date && (typeof date !== 'string'))) {
+      throw createError(400, Constants.messagesErrorRequest.invalidData);
     }
 
     const currentDate = new Date().toString();
 
     this.db.editItemById(id, [name && ['name', name], date && ['date', date], ['dateUpdate', currentDate]], 'lists');
 
-    response.send('success');
+    response.send({ message: Constants.messageSuccessExecute });
   }
 
   deleteList(request, response) {
     this.db.deleteItem(request.params.id, 'lists');
 
-    setTimeout(() => {
-      response.send({ message: 'success' });
-    }, 500);
+    response.send({ message: Constants.messageSuccessExecute });
   }
 
   getTaskById(request, response) {
@@ -126,20 +117,18 @@ class Api {
     const { text, listId } = request.body;
 
     if (!text || !text.length || !listId || !listId.length) {
-      throw createError(400, 'Required field is not filled');
+      throw createError(400, Constants.messagesErrorRequest.notFilled);
     }
-    if (typeof (text) !== 'string' || typeof (listId) !== 'string') {
-      throw createError(400, 'Invalid data type');
+    if (typeof text !== 'string' || typeof listId !== 'string') {
+      throw createError(400, Constants.messagesErrorRequest.invalidData);
     }
 
     const currentDate = new Date().toString();
     const id = crypto.randomBytes(16).toString('hex');
 
-    this.db.addItem([id, text, false, listId, currentDate, currentDate], 'tasks');
+    this.db.addItem([['id', id], ['text', text], ['done', false], ['listId', listId], ['dateCreate', currentDate], ['dateUpdate', currentDate]], 'tasks');
 
-    setTimeout(() => {
-      response.send({ id });
-    }, 500);
+    response.send({ id });
   }
 
   editTask(request, response) {
@@ -147,15 +136,15 @@ class Api {
     const { text, done } = request.body;
 
     if ((!id || !id.length)) {
-      throw createError(400, 'Missing identifier');
+      throw createError(400, Constants.messagesErrorRequest.missingId);
     }
 
     if ((!text || !text.length)) {
-      throw createError(400, 'There is no data');
+      throw createError(400, Constants.messagesErrorRequest.noData);
     }
 
-    if ((text && (typeof (text) !== 'string')) || (done !== undefined && (typeof (done) !== 'boolean'))) {
-      throw createError(400, 'Invalid data type');
+    if ((text && (typeof text !== 'string')) || (done !== undefined && (typeof done !== 'boolean'))) {
+      throw createError(400, Constants.messagesErrorRequest.invalidData);
     }
 
     const currentDate = new Date().toString();
@@ -168,17 +157,13 @@ class Api {
       ], 'tasks',
     );
 
-    setTimeout(() => {
-      response.send({ message: 'success' });
-    }, 500);
+    response.send({ message: Constants.messageSuccessExecute });
   }
 
   deleteTask(request, response) {
     this.db.deleteItem(request.params.id, 'tasks');
 
-    setTimeout(() => {
-      response.send({ message: 'success' });
-    }, 500);
+    response.send({ message: Constants.messageSuccessExecute });
   }
 }
 

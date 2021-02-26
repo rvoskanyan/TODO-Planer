@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const Api = require('./api/Api');
+const Constants = require('./Constants');
 
 const app = express();
 const port = 3000;
@@ -24,8 +25,8 @@ api.initialRouters();
 
 app.listen(port, (err) => {
   if (err) {
-    return console.error('something bad happened', err);
+    return console.error(Constants.errorStartServerMessage, err);
   }
 
-  return console.info(`server is listening on ${port}`);
+  return console.info(`${Constants.successStartServerMessage} ${port}`);
 });

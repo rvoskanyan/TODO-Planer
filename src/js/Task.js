@@ -102,8 +102,13 @@ export default class Task {
   setFocus() {
     const range = document.createRange();
     const sel = window.getSelection();
+    const input = this.node.querySelector('.item-content__input');
 
-    range.selectNodeContents(this.node.querySelector('.item-content__input'));
+    if (!input) {
+      return undefined;
+    }
+
+    range.selectNodeContents(input);
     range.collapse(false);
 
     sel.removeAllRanges();
@@ -115,7 +120,13 @@ export default class Task {
   }
 
   toggleClassStatus() {
-    this.node.querySelector('.item-content__input')
+    const selfNode = this.node.querySelector('.item-content__input');
+
+    if (!selfNode) {
+      return undefined;
+    }
+
+    selfNode
       .classList
       .toggle('item-content__input_delete');
   }
