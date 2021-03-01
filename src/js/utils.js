@@ -25,6 +25,12 @@ export function renderFrame(node) {
           </div>
       </div>
       <div class="container__list list">
+          <div class="preloader loaded">
+              <div class="preloader__row">
+                  <div class="preloader__item"></div>
+                  <div class="preloader__item"></div>
+              </div>
+          </div>
           <div class="list__head separator">
               <div class="separator__item"></div>
               <div class="separator__item"></div>
@@ -34,17 +40,13 @@ export function renderFrame(node) {
               <div class="separator__item"></div>
           </div>
           <div class="todo-list-init-content">
+              <div class="todo-init-title-container wrapper-title">
+                  
+              </div>
               <div class="list__content wrapper"></div>
           </div>
       </div>
-      <div class="container__control control todo-list-init-control">
-          <!--<button class="control__button control__button_move button">
-              <i class="control__icon control__icon_left icon icon-left-open"></i>
-          </button>-->
-          <!--<button class="control__button control__button_move control__button_right button">
-              <i class="control__icon control__icon_right icon icon-right-open"></i>
-          </button>-->
-      </div>`;
+      <div class="container__control control todo-list-init-control"></div>`;
 
   return copyNode;
 }
@@ -57,7 +59,7 @@ export function loading(state = false) {
   const preloader = document.querySelector('.preloader');
 
   if (!preloader) {
-    return undefined;
+    return;
   }
 
   if (state) {
@@ -65,30 +67,4 @@ export function loading(state = false) {
   }
 
   return preloader.classList.add('loaded');
-}
-
-export function getAddButton(handler) {
-  const button = document.createElement('button');
-  const icon = document.createElement('i');
-
-  icon.classList.add('control__icon', 'icon', 'icon-list-add');
-
-  button.classList.add('control__button', 'control__button_add', 'button', 'todo-list-init-content-add-button');
-  button.addEventListener('click', handler);
-  button.append(icon);
-
-  return button;
-}
-
-export function getSaveButton(handler) {
-  const button = document.createElement('button');
-  const icon = document.createElement('i');
-
-  icon.classList.add('control__icon', 'icon', 'icon-list-save');
-
-  button.classList.add('control__button', 'control__button_save', 'button', 'todo-list-init-content-save-button');
-  button.addEventListener('click', handler);
-  button.append(icon);
-
-  return button;
 }

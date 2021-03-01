@@ -105,7 +105,7 @@ export default class Task {
     const input = this.node.querySelector('.item-content__input');
 
     if (!input) {
-      return undefined;
+      return;
     }
 
     range.selectNodeContents(input);
@@ -123,7 +123,7 @@ export default class Task {
     const selfNode = this.node.querySelector('.item-content__input');
 
     if (!selfNode) {
-      return undefined;
+      return;
     }
 
     selfNode

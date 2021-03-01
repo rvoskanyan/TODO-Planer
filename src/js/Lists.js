@@ -1,5 +1,4 @@
-import { Messages } from './constants';
-import { getAddButton } from './utils';
+import { Messages, textContent } from './constants';
 import DataController from './workerService/DataController';
 import TodoList from './TodoList';
 
@@ -12,7 +11,7 @@ class Lists {
 	  this.lists = [];
 
 	  if (!this.contentNode) {
-	  		return undefined;
+	  		return;
 		}
 
     this.renderLists();
@@ -34,19 +33,32 @@ class Lists {
   renderLists = () => {
 			const newWrapper = document.createElement('div');
 			const wrapper = this.contentNode.querySelector('.wrapper');
-			const control = this.node.querySelector('.todo-list-init-control')
+			const control = this.node.querySelector('.todo-list-init-control');
+			const addButton = document.createElement('button');
+			const icon = document.createElement('i');
+			const titleNode = document.createElement('h2');
 
 			if (!control) {
-					return undefined;
+					return;
 			}
+
+			titleNode.classList.add('todo-list-init-title', 'title');
+			titleNode.innerText = textContent.titleList;
+			this.contentNode.querySelector('.todo-init-title-container').prepend(titleNode);
+
+			icon.classList.add('control__icon', 'icon', 'icon-list-add');
+
+			addButton.classList.add('control__button', 'control__button_add', 'button', 'todo-list-init-content-add-button');
+			addButton.addEventListener('click', this.addList);
+			addButton.append(icon);
 
 			newWrapper.classList.add('list__content', 'wrapper');
 			newWrapper.innerText = Messages.NO_LISTS;
 			wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
 
-			control.append(getAddButton(() => this.addList()));
+			control.append(addButton);
 
-			this.dataController.worker.worker.getLists().then((result) => {
+			this.dataController.doer.getLists().then((result) => {
 					if (result) {
 							newWrapper.remove();
 
@@ -80,7 +92,7 @@ class Lists {
   		const date = new Date();
   		const name = `${`0${date.getDate()}`.slice(-2)}.${`0${date.getMonth() + 1}`.slice(-2)}.${date.getFullYear()}`;
 
-  		this.dataController.worker.createList(name, date.toString())
+  		this.dataController.doer.createList(name, date.toString())
 					.then((id) => {
 							const newList = { id, name };
 
@@ -101,7 +113,7 @@ class Lists {
 									const wrapper = this.contentNode.querySelector('.wrapper');
 
 									if (!wrapper) {
-											return undefined;
+											return;
 									}
 
 									wrapper.remove();
@@ -132,7 +144,7 @@ class Lists {
 				delete this.examplesLists[index];
 				this.examplesLists.splice(index, 1);
 
-				this.dataController.worker.deleteList(id);
+				this.dataController.doer.deleteList(id);
 		}
 }
 

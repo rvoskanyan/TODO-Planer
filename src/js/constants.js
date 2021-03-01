@@ -16,6 +16,7 @@ export const Messages = {
   ELEMENT_NOT_FOUND: 'Элемент не найден!',
   ERROR_DATA: 'Ошибка данных!',
   NOT_SAVE: 'Элемент не найден, данные не сохранены!',
+  ERROR_MIN_LENGTH: 'Ошибка количества символов',
 };
 
 export const API_PREFIX = '/api/';
@@ -30,4 +31,8 @@ export const workers = {
 export const resultMessages = {
   success: 'success',
   error: 'error',
+};
+
+export const textContent = {
+  titleList: 'Оглавление',
 };

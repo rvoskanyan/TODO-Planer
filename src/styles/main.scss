@@ -4,9 +4,9 @@
 @import "maps";
 
 .preloader {
-  position: fixed;
+  position: absolute;
   top: 0;
-  height: 100vh;
+  bottom: 0;
   width: 100%;
   background: $color-bg-load;
   z-index: map-get($zIndex, loader);
@@ -86,12 +86,14 @@ body {
     background-color: $background-list-color;
     width: 100%;
     border-radius: 10px;
-    padding: 20px;
+    padding: 20px 0;
+    position: relative;
     box-sizing: border-box;
   }
 }
 
 .separator {
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
 
@@ -125,9 +127,48 @@ body {
   outline: none;
 }
 
+.wrapper-title {
+  margin: 20px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  border-radius: 10px;
+  outline: none;
+  position: relative;
+
+  &.active {
+    border-color: #317cc8!important;
+  }
+
+  &:hover {
+    border-color: #6f7e8d;
+  }
+
+  &:hover > .title-select-date {
+    display: block;
+  }
+}
+
+.title {
+  margin: 10px 0;
+  outline: none;
+  word-wrap: anywhere;
+}
+
+.title-select-date {
+  width: 46px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+}
+
 .list {
   &__content {
-    padding: 25px 10px;
+    padding: 0 10px 25px 10px;
   }
 }
 
@@ -137,32 +178,54 @@ body {
   background-color: rgba(255, 0, 0, 0.5);
   border-radius: 100%;
   position: absolute;
-  left: -20px;
+  left: 0;
   top: 6px;
 }
 
 .item-content {
   display: flex;
   position: relative;
-  width: 92%;
-
-  background: repeating-linear-gradient(90deg, transparent 0 7px, $background-list-color 7px 10px), repeating-linear-gradient(transparent 0px 22px, $separator-line-color 20px 23px);
+  padding: 0 40px 0 20px;
+  box-sizing: border-box;
+  cursor: pointer;
+  overflow-wrap: anywhere;
 
   &__input {
     font-size: 20px;
     padding: 0;
+    background: repeating-linear-gradient(90deg, transparent 0 7px, $background-list-color 7px 10px), repeating-linear-gradient(transparent 0px 22px, $separator-line-color 20px 23px);
     font-family: 'Times New Roman';
 
     &_delete {
       text-decoration: line-through;
     }
   }
+
+  &_list {
+    padding: 0 20px;
+  }
+
+  &_list > .input {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &_list > .content {
+    &__control {
+      right: -5px;
+    }
+  }
+
+  &:hover > .inner-control {
+    display: flex;
+  }
 }
 
 .content {
   &__control {
     position: absolute;
-    right: -60px;
+    right: -12px;
     top: 1px;
   }
 }
@@ -228,29 +291,37 @@ body {
   }
 }
 
-.icon:before {
-  font-family: "fontello";
-  font-style: normal;
-  font-weight: normal;
-  font-size: 20px;
-  speak: never;
-  color: $icon-color;
+.icon {
+  &:before {
+    font-family: "fontello";
+    font-style: normal;
+    font-weight: normal;
+    font-size: 20px;
+    speak: never;
+    color: $icon-color;
 
-  display: inline-block;
-  text-decoration: inherit;
-  width: 1em;
-  margin-right: .2em;
-  text-align: center;
+    display: inline-block;
+    text-decoration: inherit;
+    width: 1em;
+    margin-right: .2em;
+    text-align: center;
 
-  font-variant: normal;
-  text-transform: none;
+    font-variant: normal;
+    text-transform: none;
 
-  line-height: 1em;
-  margin-left: .2em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    line-height: 1em;
+    margin-left: .2em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  &:hover {
+    &:before {
+      color: #5d9ad1;
+    }
+  }
 }
 
 .inner-control {
-  display: flex;
+  display: none;
 }

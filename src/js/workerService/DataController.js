@@ -4,8 +4,6 @@ import ServerWorker from './ServerWorker';
 export default class DataController {
   constructor(worker = workers.locale) {
     if (!DataController._instance) {
-      this.worker = worker;
-
       switch (worker) {
         case workers.server: {
           this.doer = new ServerWorker();

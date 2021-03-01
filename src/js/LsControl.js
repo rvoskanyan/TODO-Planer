@@ -27,7 +27,7 @@ export default class LsControl {
         this.requestedData[lsKey] = result;
       }
 
-      return undefined;
+      return;
     }
 
     return this.requestedData[lsKey].filter((item) => item[field] === value)
@@ -40,7 +40,7 @@ export default class LsControl {
         this.requestedData[lsKey] = result;
       }
 
-      return undefined;
+      return;
     }
 
     const date = new Date().toString();
@@ -63,7 +63,7 @@ export default class LsControl {
         this.requestedData[lsKey] = result;
       }
 
-      return undefined;
+      return;
     }
 
     const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === dataItem.id);
@@ -89,7 +89,7 @@ export default class LsControl {
         this.requestedData[lsKey] = result;
       }
 
-      return undefined;
+      return;
     }
 
     const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === idItem);

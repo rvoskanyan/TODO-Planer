@@ -1,7 +1,6 @@
 import DataController from './workerService/DataController';
 import Task from './Task';
-import { Messages, SystemConstant, TypeEvents } from './constants';
-import {getAddButton, getSaveButton} from './utils';
+import { Messages, SystemConstant, textContent } from './constants';
 
 export default class TodoList {
   constructor(id, node, elem = {}, handleDeleteList = undefined) {
@@ -13,10 +12,6 @@ export default class TodoList {
     this.dataController = new DataController();
     this.tasks = [];
     this.handleDeleteList = handleDeleteList;
-
-    if (!this.contentNode) {
-      return undefined;
-    }
   }
 
   createTasks() {
@@ -42,10 +37,18 @@ export default class TodoList {
     const div = document.createElement('div');
     const input = document.createElement('input');
     const control = this.node.querySelector('.todo-list-init-control');
+    const saveButton = document.createElement('button');
+    const icon = document.createElement('i');
 
     if (!control) {
-      return undefined;
+      return;
     }
+
+    icon.classList.add('control__icon', 'icon', 'icon-list-save');
+
+    saveButton.classList.add('control__button', 'control__button_save', 'button', 'todo-list-init-content-save-button');
+    saveButton.addEventListener('click', this.saveChangeList);
+    saveButton.append(icon);
 
     div.className = 'item-content';
 
@@ -55,13 +58,13 @@ export default class TodoList {
 
     this.appendNodeTask(div);
 
-    control.append(getSaveButton(this.saveChangeList));
+    control.append(saveButton);
 
-    this.dataController.worker.getListById(this.id).then((result) => {
+    this.dataController.doer.getListById(this.id).then((result) => {
       const dateNode = this.node.querySelector('.todo-list-init-date');
 
       if (!dateNode) {
-        return undefined;
+        return;
       }
 
       this.elem = result;
@@ -78,7 +81,7 @@ export default class TodoList {
     const nodeDate = this.node.querySelector('.todo-list-init-date');
 
     if (!name || !nodeDate) {
-      return undefined;
+      return;
     }
 
     const newDate = new Date(nodeDate.value);
@@ -92,12 +95,12 @@ export default class TodoList {
     ) {
       name = `${objectNewDate.date}.${objectNewDate.month}.${objectNewDate.year}`
 
-      return this.dataController.worker.updateList({ id: this.id, name, date: newDate.toString() })
+      return this.dataController.doer.updateList({ id: this.id, name, date: newDate.toString() })
           .then(() => document.location.href = '/');
     }
 
     if (name !== this.elem.name) {
-      return this.dataController.worker.updateList({ id: this.id, name, date: newDate.toString() })
+      return this.dataController.doer.updateList({ id: this.id, name, date: newDate.toString() })
           .then(() => document.location.href = '/');
     }
 
@@ -112,10 +115,8 @@ export default class TodoList {
     const iconDelete = document.createElement('i');
     const buttonDelete = document.createElement('button');
     const link = document.createElement('a');
-    const buttonEdit = document.createElement('a');
-    const iconEdit = document.createElement('i');
 
-    div.className = 'item-content';
+    div.className = 'item-content item-content_list';
 
     divControls.classList.add('content__control', 'inner-control');
 
@@ -131,13 +132,6 @@ export default class TodoList {
     link.text = this.elem.name;
     input.append(link);
 
-    iconEdit.classList.add('icon', 'icon-pencil');
-
-    buttonEdit.classList.add('inner-control__button', 'button');
-    buttonEdit.href = `/editList/${this.elem.id}`;
-    buttonEdit.append(iconEdit);
-
-    divControls.append(buttonEdit);
     divControls.append(buttonDelete);
 
     marker.classList.add('marker');
@@ -154,34 +148,99 @@ export default class TodoList {
     const newWrapper = document.createElement('div');
     const wrapper = this.contentNode.querySelector('.wrapper');
     const control = this.node.querySelector('.todo-list-init-control');
+    const addButton = document.createElement('button');
+    const icon = document.createElement('i');
 
     if (!control) {
-      return undefined;
+      return;
     }
+
+    icon.classList.add('control__icon', 'icon', 'icon-list-add');
+
+    addButton.classList.add('control__button', 'control__button_add', 'button', 'todo-list-init-content-add-button');
+    addButton.addEventListener('click', () => this.addTask());
+    addButton.append(icon);
 
     newWrapper.classList.add('list__content', 'wrapper');
     newWrapper.innerText = Messages.NO_TASKS;
     wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
 
-    control.append(getAddButton(() => this.addTask()));
+    control.append(addButton);
 
-    this.dataController.worker.getTasksByListId(this.id).then((result) => {
-      if (result.length) {
-        newWrapper.remove();
+    this.dataController.doer.getListById(this.id).then((result) => {
+      const titleNode = document.createElement('h2');
+      const childNodeTitle = this.contentNode.querySelector('.todo-init-title-container');
+      const inputDate = document.createElement('input');
 
-        this.tasks = result;
-        this.createTasks();
-        this.examplesTasks.forEach((elem) => {
-          const taskNode = elem.getNode();
+      titleNode.classList.add('todo-list-init-title', 'title');
+      titleNode.innerText = result.name;
+      titleNode.addEventListener('click', () => this.editNameListOnWrite(titleNode, childNodeTitle));
+      childNodeTitle.prepend(titleNode);
 
-          if (elem.edit) {
-            elem.setFocus();
-          }
+      inputDate.setAttribute('type', 'date');
+      inputDate.classList.add('input', 'title-select-date');
+      inputDate.addEventListener('click', () => this.editNameListOnDate(titleNode, inputDate));
+      childNodeTitle.append(inputDate);
 
-          this.appendNodeTask(taskNode);
-        });
-      }
+      this.elem = result;
+
+      this.dataController.doer.getTasksByListId(this.id).then((result) => {
+        if (result.length) {
+          newWrapper.remove();
+
+          this.tasks = result;
+          this.createTasks();
+          this.examplesTasks.forEach((elem) => {
+            const taskNode = elem.getNode();
+
+            if (elem.edit) {
+              elem.setFocus();
+            }
+
+            this.appendNodeTask(taskNode);
+          });
+        }
+      });
+    })
+  }
+
+  editNameListOnWrite = (node, childNode) => {
+    if (node === document.activeElement) {
+      return;
+    }
+
+    node.setAttribute('contenteditable', '');
+    node.focus();
+    node.addEventListener('focusout', () => {
+      childNode.classList.remove('active');
+      node.removeAttribute('contenteditable');
+      this.saveNameList(node)
     });
+
+    childNode.classList.add('active');
+  }
+
+  editNameListOnDate = (node, date) => {
+    date.addEventListener('focusout', () => {
+      if (!date.value) {
+        return;
+      }
+
+      const objectDate = new Date(date.value).toObject();
+
+      node.innerText = `${objectDate.date}.${objectDate.month}.${objectDate.year}`;
+      date.value = '';
+
+      this.saveNameList(node);
+    });
+  }
+
+  saveNameList = (node) => {
+    if (node.innerText.length < 3) {
+      return console.error(Messages.ERROR_MIN_LENGTH);
+    }
+
+    return this.dataController.doer.updateList({ id: this.id, name: node.innerText });
   }
 
   appendNodeTask(node) {
@@ -228,7 +287,7 @@ export default class TodoList {
       const wrapper = this.contentNode.querySelector('.wrapper');
 
       if (wrapper) {
-        return undefined;
+        return;
       }
 
       wrapper.remove();
@@ -252,7 +311,7 @@ export default class TodoList {
     examplesCurrentTask.done = dataCurrentTask.done;
     examplesCurrentTask.toggleClassStatus();
 
-    this.dataController.worker.updateTask({
+    this.dataController.doer.updateTask({
       id,
       text: dataCurrentTask.text,
       done: dataCurrentTask.done,
@@ -280,7 +339,7 @@ export default class TodoList {
     delete this.examplesTasks[index];
     this.examplesTasks.splice(index, 1);
 
-    this.dataController.worker.deleteTask(id);
+    this.dataController.doer.deleteTask(id);
   }
 
   editTask(id) {
@@ -330,7 +389,7 @@ export default class TodoList {
         return false;
       }
 
-      this.dataController.worker.createTask(this.id, task.text).then((idNewTask) => {
+      this.dataController.doer.createTask(this.id, task.text).then((idNewTask) => {
         this.tasks[this.tasks.length - 1].id = idNewTask;
         this.tasks[this.tasks.length - 1].text = task.text;
         this.examplesTasks[this.examplesTasks.length - 1].updateDataTask({
@@ -386,7 +445,7 @@ export default class TodoList {
 
     oldNode.replaceWith(newNode);
 
-    this.dataController.worker.updateTask({
+    this.dataController.doer.updateTask({
       ...task,
       done: false,
     });
