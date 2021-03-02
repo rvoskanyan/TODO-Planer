@@ -36,3 +36,6 @@ export const resultMessages = {
 export const textContent = {
   titleList: 'Оглавление',
 };
+
+export const yandexAuth = 'https://oauth.yandex.ru/authorize?response_type=token&client_id=f7e4fe91e90143bda33360c43fe13b8e';
+export const token = /access_token=([^&]+)/.exec(document.location.hash)[1];
