@@ -9,7 +9,7 @@ String.prototype.hashCode = function () {
   for (i = 0; i < this.length; i++) {
     chr = this.charCodeAt(i);
     hash = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
+    hash |= 0;
   }
 
   return hash;
@@ -19,11 +19,6 @@ export function renderFrame(node) {
   const copyNode = node;
 
   copyNode.innerHTML = `
-      <div class="container__when when">
-          <div class="when__date input-wrapper">
-              <input type="date" class="input todo-list-init-date">
-          </div>
-      </div>
       <div class="container__list list">
           <div class="preloader loaded">
               <div class="preloader__row">

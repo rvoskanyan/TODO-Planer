@@ -75,33 +75,15 @@ class ServerWorker {
   }
 
   createTask(listId, text) {
-    loading(true);
-
-    return this.worker.post('task', { listId, text }).then((result) => {
-      loading(false);
-
-      return result.id;
-    });
+    return this.worker.post('task', { listId, text });
   }
 
   updateTask(task) {
-    loading(true);
-
-    return this.worker.put(`task/${task.id}`, task).then((result) => {
-      loading(false);
-
-      return result;
-    });
+    return this.worker.put(`task/${task.id}`, task);
   }
 
   deleteTask(id) {
-    loading(true);
-
-    return this.worker.delete(`task/${id}`).then((result) => {
-      loading(false);
-
-      return result;
-    });
+    return this.worker.delete(`task/${id}`);
   }
 }
 

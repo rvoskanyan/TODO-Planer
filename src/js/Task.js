@@ -11,6 +11,7 @@ export default class Task {
     this.text = task.text;
     this.done = task.done;
     this.edit = task.edit;
+    this.loaded = false;
 
     this.toggleStatus = toggleStatus;
     this.deleteTask = deleteTask;
@@ -38,6 +39,16 @@ export default class Task {
     const iconDelete = document.createElement('i');
     const buttonDelete = document.createElement('button');
 
+    if (this.loaded) {
+      const wrapperLoader = document.createElement('div');
+      const loader = document.createElement('div');
+
+      loader.classList.add('wrapper-circle-loader__loader');
+      wrapperLoader.classList.add('wrapper-circle-loader');
+      wrapperLoader.append(loader);
+      div.append(wrapperLoader);
+    }
+
     div.className = 'item-content';
 
     divControls.classList.add('content__control', 'inner-control');
@@ -50,7 +61,7 @@ export default class Task {
     buttonDelete.addEventListener('click', () => this.handleClickDelete());
     buttonDelete.append(iconDelete);
 
-    if (!this.edit) {
+    if (!this.edit && !this.loaded) {
       const iconEdit = document.createElement('i');
       const buttonEdit = document.createElement('button');
 
