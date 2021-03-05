@@ -19,6 +19,13 @@ export const Messages = {
   ERROR_MIN_LENGTH: 'Ошибка количества символов',
 };
 
+export const Titles = {
+  addList: 'Создать новый TODO-лист',
+  addTask: 'Добавить новую задачу',
+  toList: 'Вернуться к оглавлению',
+  deleteList: 'Удалить TODO-лист',
+};
+
 export const API_PREFIX = '/api/';
 export const SERVER_ADDRESS = 'http://localhost:3000';
 

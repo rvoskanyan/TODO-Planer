@@ -1,16 +1,20 @@
 import LsControl from '../LsControl';
 
 class LocaleWorker {
+  constructor() {
+    this.worker = new LsControl();
+  }
+
   getLists() {
-    this.doer = new LsControl();
+    return this.worker;
   }
 
   getListById(id) {
-    this.doer = new LsControl();
+    return this.worker;
   }
 
   getTasksByListId(listId) {
-    this.doer = new LsControl();
+    return this.worker;
   }
 
   createList(name, date) {

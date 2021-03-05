@@ -2,7 +2,7 @@ import { clearSlashes } from './utils';
 
 class Router {
     routes = [];
-    mode = null;
+    mode = undefined;
     root = '/';
 
     constructor(options) {
@@ -69,8 +69,8 @@ class Router {
     };
 
     listen = () => {
-        clearInterval(this.interval);
-        this.interval = setInterval(this.interval, 50);
+        clearInterval(this.intervalLink);
+        this.intervalLink = setInterval(this.interval, 50);
     };
 
     interval = () => {

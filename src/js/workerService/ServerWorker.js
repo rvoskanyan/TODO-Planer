@@ -51,23 +51,11 @@ class ServerWorker {
   }
 
   updateList(list) {
-    loading(true);
-
-    return this.worker.put(`list/${list.id}`, list).then((result) => {
-      loading(false);
-
-      return result;
-    });
+    return this.worker.put(`list/${list.id}`, list);
   }
 
   deleteList(id) {
-    loading(true);
-
-    return this.worker.delete(`list/${id}`).then((result) => {
-      loading(false);
-
-      return result;
-    });
+    return this.worker.delete(`list/${id}`);
   }
 
   getTaskById() {

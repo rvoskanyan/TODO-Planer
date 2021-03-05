@@ -88,7 +88,7 @@ class Api {
       throw createError(400, Constants.messagesErrorRequest.noData);
     }
 
-    if ((name && (typeof name !== 'string')) || (date && (typeof date !== 'string'))) {
+    if ((name && typeof name !== 'string') || (date && typeof date !== 'string')) {
       throw createError(400, Constants.messagesErrorRequest.invalidData);
     }
 
@@ -143,7 +143,7 @@ class Api {
       throw createError(400, Constants.messagesErrorRequest.noData);
     }
 
-    if ((text && (typeof text !== 'string')) || (done !== undefined && (typeof done !== 'boolean'))) {
+    if ((text && typeof text !== 'string') || (done !== undefined && typeof done !== 'boolean')) {
       throw createError(400, Constants.messagesErrorRequest.invalidData);
     }
 

@@ -1,6 +1,7 @@
 import DataController from './workerService/DataController';
 import Task from './Task';
-import { Messages, SystemConstant, textContent } from './constants';
+import { Messages, SystemConstant, textContent, Titles } from './constants';
+import { loading } from './utils';
 
 export default class TodoList {
   constructor(id, node, elem = {}, handleDeleteList = undefined) {
@@ -12,6 +13,8 @@ export default class TodoList {
     this.dataController = new DataController();
     this.tasks = [];
     this.handleDeleteList = handleDeleteList;
+    this.query = new Promise((resolve) => resolve());
+    this.loaded = false;
   }
 
   createTasks() {
@@ -42,6 +45,16 @@ export default class TodoList {
     const buttonDelete = document.createElement('button');
     const link = document.createElement('a');
 
+    if (this.loaded) {
+      const wrapperLoader = document.createElement('div');
+      const loader = document.createElement('div');
+
+      loader.classList.add('wrapper-circle-loader__loader');
+      wrapperLoader.classList.add('wrapper-circle-loader');
+      wrapperLoader.append(loader);
+      div.append(wrapperLoader);
+    }
+
     div.className = 'item-content item-content_list';
 
     divControls.classList.add('content__control', 'inner-control');
@@ -50,15 +63,17 @@ export default class TodoList {
 
     iconDelete.classList.add('icon', 'icon-trash');
 
-    buttonDelete.classList.add('inner-control__button', 'button');
-    buttonDelete.addEventListener('click', () => this.handleDeleteList(this.id));
-    buttonDelete.append(iconDelete);
+    if (!this.loaded) {
+      buttonDelete.classList.add('inner-control__button', 'button');
+      buttonDelete.addEventListener('click', () => this.handleDeleteList(this.id));
+      buttonDelete.append(iconDelete);
+      divControls.append(buttonDelete);
+    }
 
     link.href = `/listTasks/${this.elem.id}`;
     link.text = this.elem.name;
+    link.classList.add('item-content__link');
     input.append(link);
-
-    divControls.append(buttonDelete);
 
     marker.classList.add('marker');
     div.prepend(input);
@@ -78,6 +93,8 @@ export default class TodoList {
     const addIcon = document.createElement('i');
     const toListButton = document.createElement('button');
     const toListIcon = document.createElement('i');
+    const deleteButton = document.createElement('button');
+    const deleteIcon = document.createElement('i');
 
     if (!control) {
       return;
@@ -85,14 +102,22 @@ export default class TodoList {
 
     addIcon.classList.add('control__icon', 'icon', 'icon-list-add');
     toListIcon.classList.add('control__icon', 'icon', 'icon-list-toList');
+    deleteIcon.classList.add('control__icon', 'icon', 'icon-trash');
 
     addButton.classList.add('control__button', 'control__button_add', 'button', 'todo-list-init-content-add-button');
     addButton.addEventListener('click', () => this.addTask());
     addButton.append(addIcon);
+    addButton.title = Titles.addTask;
 
     toListButton.classList.add('control__button', 'control__button_toList', 'button', 'todo-list-init-content-add-button');
     toListButton.addEventListener('click', () => document.location.href = '/');
     toListButton.append(toListIcon);
+    toListButton.title = Titles.toList;
+
+    deleteButton.classList.add('control__button', 'control__button_delete', 'button', 'todo-list-init-content-add-button');
+    deleteButton.addEventListener('click', () => this.deleteList());
+    deleteButton.append(deleteIcon);
+    deleteButton.title = Titles.deleteList;
 
     newWrapper.classList.add('list__content', 'wrapper');
     newWrapper.innerText = Messages.NO_TASKS;
@@ -100,6 +125,7 @@ export default class TodoList {
 
     control.append(addButton);
     control.append(toListButton);
+    control.append(deleteButton);
 
     this.dataController.doer.getListById(this.id).then((result) => {
       const titleNode = document.createElement('h2');
@@ -114,7 +140,7 @@ export default class TodoList {
 
       inputDate.setAttribute('type', 'date');
       inputDate.classList.add('input', 'title-select-date');
-      inputDate.addEventListener('click', () => this.editNameListOnDate(titleNode, inputDate));
+      inputDate.addEventListener('click', () => this.editNameListOnDate(titleNode, inputDate, childNodeTitle));
       childNodeTitle.append(inputDate);
 
       this.elem = result;
@@ -149,13 +175,13 @@ export default class TodoList {
     node.addEventListener('focusout', () => {
       childNode.classList.remove('active');
       node.removeAttribute('contenteditable');
-      this.saveNameList(node)
+      this.saveNameList(node, childNode)
     });
 
     childNode.classList.add('active');
   }
 
-  editNameListOnDate = (node, date) => {
+  editNameListOnDate = (node, date, childNodeTitle) => {
     date.addEventListener('focusout', () => {
       if (!date.value) {
         return;
@@ -166,16 +192,30 @@ export default class TodoList {
       node.innerText = `${objectDate.date}.${objectDate.month}.${objectDate.year}`;
       date.value = '';
 
-      this.saveNameList(node);
+      this.saveNameList(node, childNodeTitle);
     });
   }
 
-  saveNameList = (node) => {
+  saveNameList = (node, childNode) => {
     if (node.innerText.length < 3) {
       return console.error(Messages.ERROR_MIN_LENGTH);
     }
 
-    return this.dataController.doer.updateList({ id: this.id, name: node.innerText });
+    if(node.innerText === this.elem.name) {
+      return;
+    }
+
+    this.elem.name = node.innerText;
+
+    const wrapperLoader = document.createElement('div');
+    const loader = document.createElement('div');
+
+    loader.classList.add('wrapper-circle-loader__loader');
+    wrapperLoader.classList.add('wrapper-circle-loader');
+    wrapperLoader.append(loader);
+    childNode.append(wrapperLoader);
+
+    return this.dataController.doer.updateList({ id: this.id, name: node.innerText }).then(() => wrapperLoader.remove());
   }
 
   appendNodeTask(node) {
@@ -191,6 +231,15 @@ export default class TodoList {
     newWrapper.append(node);
 
     return this.contentNode.append(newWrapper);
+  }
+
+  deleteList() {
+    loading(true);
+
+    this.dataController.doer.deleteList(this.elem.id).then(() => {
+      loading(true);
+      location.href = '/';
+    });
   }
 
   addTask() {
@@ -221,7 +270,7 @@ export default class TodoList {
     if (this.tasks.length === 1) {
       const wrapper = this.contentNode.querySelector('.wrapper');
 
-      if (wrapper) {
+      if (!wrapper) {
         return;
       }
 
@@ -267,7 +316,7 @@ export default class TodoList {
   }
 
   deleteTask(id) {
-    const index = this.tasks.findIndex((item) => item.id === id);
+    let index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
       return console.error(Messages.ELEMENT_NOT_FOUND);
@@ -282,21 +331,23 @@ export default class TodoList {
 
     currentNode.replaceWith(newNode);
 
-    this.dataController.doer.deleteTask(id).then(() => {
-      this.tasks.splice(index, 1);
-      this.examplesTasks[index].node.remove();
+    this.query = this.query.then(() => {
+      this.dataController.doer.deleteTask(id).then(() => {
+        index = this.tasks.findIndex((item) => item.id === id);
+        this.tasks.splice(index, 1);
+        this.examplesTasks[index].node.remove();
+        delete this.examplesTasks[index];
+        this.examplesTasks.splice(index, 1);
 
-      if (!this.tasks.length) {
-        const newWrapper = document.createElement('div');
-        const wrapper = this.contentNode.querySelector('.wrapper');
+        if (!this.tasks.length) {
+          const newWrapper = document.createElement('div');
+          const wrapper = this.contentNode.querySelector('.wrapper');
 
-        newWrapper.classList.add('list__content', 'wrapper');
-        newWrapper.innerText = Messages.NO_TASKS;
-        wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
-      }
-
-      delete this.examplesTasks[index];
-      this.examplesTasks.splice(index, 1);
+          newWrapper.classList.add('list__content', 'wrapper');
+          newWrapper.innerText = Messages.NO_TASKS;
+          wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+        }
+      })
     });
   }
 
@@ -425,6 +476,7 @@ export default class TodoList {
 
       dataCurrentTask.edit = false;
       dataCurrentTask.done = false;
+      dataCurrentTask.text = task.text;
       exampleCurrentTask.edit = false;
       exampleCurrentTask.done = false;
       exampleCurrentTask.loaded = false;

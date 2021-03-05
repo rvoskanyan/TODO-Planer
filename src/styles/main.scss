@@ -94,9 +94,27 @@ body {
   margin: 0;
 }
 
+.todo-list-init {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.todo-list-init-content {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .container {
+  display: flex;
+  flex-direction: column;
   width: 500px;
-  margin: 20px auto 0 auto;
+  min-height: 300px;
+  max-height: 100vh;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 20px 0;
 
   &__when {
     width: 100%;
@@ -105,13 +123,15 @@ body {
   }
 
   &__list {
-    margin-top: 15px;
     background-color: $background-list-color;
     width: 100%;
     border-radius: 10px;
     padding: 20px 0;
     position: relative;
     box-sizing: border-box;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -191,6 +211,8 @@ body {
 
 .list {
   &__content {
+    overflow-y: auto;
+    min-height: 0;
     padding: 0 10px 25px 10px;
   }
 }
@@ -222,6 +244,22 @@ body {
     &_delete {
       text-decoration: line-through;
     }
+  }
+
+  &__link {
+    color: #6174ff;
+    text-decoration: none;
+    display: block;
+    box-sizing: border-box;
+    border-bottom: 2px solid transparent;
+    line-height: 22px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__link:hover {
+    border-bottom: 2px solid #6174ff;
   }
 
   &_list {
@@ -278,6 +316,8 @@ body {
     width: 50px;
     height: 50px;
     border-radius: 100%;
+    transition-property: transform;
+    transition: 0.15s linear;
 
     &_toList {
       background-color: $btn-move-color;
@@ -298,6 +338,11 @@ body {
     &_delete {
       background-color: $btn-delete-color;
     }
+  }
+
+  &__button:hover {
+    box-shadow: 1px 2px 10px rgba(0, 0, 0, 0.8);
+    transform: scale(1.05, 1.05);
   }
 
   &__icon {
