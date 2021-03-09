@@ -241,7 +241,10 @@ export default class TodoList {
     wrapperLoader.append(loader);
     childNode.append(wrapperLoader);
 
-    return this.dataController.doer.updateList({ id: this.id, name: node.innerText }).then(() => wrapperLoader.remove());
+    return this.dataController.doer.updateList({ id: this.id, name: node.innerText }).then(() => {
+      this.contentNode.querySelector('.bread_crumbs').querySelector('span').innerText = `/${this.elem.name}`;
+      wrapperLoader.remove()
+    });
   }
 
   appendNodeTask(node) {
