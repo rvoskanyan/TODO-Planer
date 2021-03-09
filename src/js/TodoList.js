@@ -1,18 +1,21 @@
+import DataController from './workerService/DataController';
 import Task from './Task';
-import { Messages, SystemConstant } from './constants';
+import { Messages, SystemConstant, textContent, Titles } from './constants';
+import { loading } from './utils';
 
 export default class TodoList {
-  constructor(state, node, lsControl, childNode) {
+  constructor(id, node, elem = {}, handleDeleteList = undefined) {
+    this.id = id;
+    this.elem = elem;
     this.node = node;
-    this.childNode = childNode;
-    this.lsControl = lsControl;
-    this.tasks = state.tasks;
+    this.contentNode = this.node.querySelector('.todo-list-init-content');
     this.examplesTasks = [];
-    this.nodesTasks = [];
-
-    this.createTasks();
-    this.renderList();
-    this.initDate();
+    this.dataController = new DataController();
+    this.tasks = [];
+    this.handleDeleteList = handleDeleteList;
+    this.query = new Promise((resolve) => resolve());
+    this.loaded = false;
+    this.editTitle = false;
   }
 
   createTasks() {
@@ -22,7 +25,7 @@ export default class TodoList {
       this.tasks.forEach((elem) => {
         this.examplesTasks.push(new Task(
           elem,
-          this.node,
+          this.contentNode,
           {
             toggleStatus: this.toggleStatus.bind(this),
             deleteTask: this.deleteTask.bind(this),
@@ -34,40 +37,237 @@ export default class TodoList {
     }
   }
 
-  initDate() {
-    const nodeDate = this.childNode.querySelector('.todo-list-init-date');
+  getNode() {
+    const div = document.createElement('div');
+    const marker = document.createElement('div');
+    const divControls = document.createElement('div');
+    const iconDelete = document.createElement('i');
+    const buttonDelete = document.createElement('button');
+    const link = document.createElement('a');
 
-    nodeDate.valueAsDate = new Date(this.lsControl.getDate());
-    nodeDate.addEventListener('change', () => {
-      this.lsControl.setDate(new Date(nodeDate.value));
+    if (this.loaded) {
+      const wrapperLoader = document.createElement('div');
+      const loader = document.createElement('div');
+
+      loader.classList.add('wrapper-circle-loader__loader');
+      wrapperLoader.classList.add('wrapper-circle-loader');
+      wrapperLoader.append(loader);
+      div.append(wrapperLoader);
+    }
+
+    div.className = 'item-content item-content_list';
+
+    divControls.classList.add('content__control', 'inner-control');
+
+    iconDelete.classList.add('icon', 'icon-trash');
+
+    if (!this.loaded) {
+      buttonDelete.classList.add('inner-control__button', 'button');
+      buttonDelete.addEventListener('click', () => this.handleDeleteList(this.id));
+      buttonDelete.append(iconDelete);
+      divControls.append(buttonDelete);
+    }
+
+    link.classList.add('item-content__input', 'input', 'item-content__input_animate', 'item-content__link');
+    link.setAttribute('data-content', this.elem.name);
+    link.href = `/listTasks/${this.elem.id}`;
+    link.addEventListener('click', (e) => {
+      history.pushState(null, null, `/listTasks/${this.elem.id}`);
+      e.preventDefault()
+      return false;
+    });
+    link.text = this.elem.name;
+
+    marker.classList.add('marker');
+    div.prepend(link);
+    div.append(divControls);
+    div.append(marker);
+
+    this.node = div;
+
+    return div;
+  }
+
+  renderTasks() {
+    const newWrapper = document.createElement('div');
+    const wrapper = this.contentNode.querySelector('.wrapper');
+    const control = this.node.querySelector('.todo-list-init-control');
+    const addButton = document.createElement('button');
+    const addIcon = document.createElement('i');
+    const toListButton = document.createElement('button');
+    const toListIcon = document.createElement('i');
+    const deleteButton = document.createElement('button');
+    const deleteIcon = document.createElement('i');
+
+    if (!control) {
+      return;
+    }
+
+    addIcon.classList.add('control__icon', 'icon', 'icon-list-add');
+    toListIcon.classList.add('control__icon', 'icon', 'icon-list-toList');
+    deleteIcon.classList.add('control__icon', 'icon', 'icon-trash');
+
+    addButton.classList.add('control__button', 'control__button_add', 'button', 'todo-list-init-content-add-button');
+    addButton.addEventListener('click', () => this.addTask());
+    addButton.append(addIcon);
+    addButton.title = Titles.addTask;
+
+    toListButton.classList.add('control__button', 'control__button_toList', 'button', 'todo-list-init-content-add-button');
+    toListButton.addEventListener('click', () => history.pushState(null, null, '/'));
+    toListButton.append(toListIcon);
+    toListButton.title = Titles.toList;
+
+    deleteButton.classList.add('control__button', 'control__button_delete', 'button', 'todo-list-init-content-add-button');
+    deleteButton.addEventListener('click', () => this.deleteList());
+    deleteButton.append(deleteIcon);
+    deleteButton.title = Titles.deleteList;
+
+    newWrapper.classList.add('list__content', 'wrapper');
+    newWrapper.innerText = Messages.NO_TASKS;
+    wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+
+    control.append(addButton);
+    control.append(toListButton);
+    control.append(deleteButton);
+
+    this.dataController.doer.getListById(this.id).then((result) => {
+      const titleNode = document.createElement('h2');
+      const childNodeTitle = this.contentNode.querySelector('.todo-init-title-container');
+      const inputDate = document.createElement('input');
+      const breadCrumbs = document.createElement('div');
+      const linkBreadCrumbs = document.createElement('a');
+      const currentPageBreadCrumbs = document.createElement('span');
+
+      currentPageBreadCrumbs.innerText = `/${result.name}`;
+      linkBreadCrumbs.innerText = textContent.titleList;
+      linkBreadCrumbs.href = '/';
+      linkBreadCrumbs.addEventListener('click', (e) => {
+        history.pushState(null, null, '/')
+        e.preventDefault();
+        return false;
+      })
+      breadCrumbs.classList.add('bread_crumbs');
+      breadCrumbs.append(linkBreadCrumbs);
+      breadCrumbs.append(currentPageBreadCrumbs);
+
+      this.contentNode.prepend(breadCrumbs);
+
+      titleNode.classList.add('todo-list-init-title', 'title');
+      titleNode.innerText = result.name;
+      titleNode.addEventListener('click', (e) => {
+        this.editNameListOnWrite(titleNode, childNodeTitle);
+        e.stopPropagation();
+      });
+      childNodeTitle.prepend(titleNode);
+      childNodeTitle.classList.add('wrapper-title_list');
+      childNodeTitle.addEventListener('click', () => this.editNameListOnWrite(titleNode, childNodeTitle));
+
+      inputDate.setAttribute('type', 'date');
+      inputDate.classList.add('input', 'title-select-date');
+      inputDate.addEventListener('click', (e) => {
+        this.editNameListOnDate(titleNode, inputDate, childNodeTitle);
+        e.stopPropagation();
+      });
+      childNodeTitle.append(inputDate);
+
+      this.elem = result;
+
+      this.dataController.doer.getTasksByListId(this.id).then((result) => {
+        if (result.length) {
+          newWrapper.remove();
+
+          this.tasks = result;
+          this.createTasks();
+          this.examplesTasks.forEach((elem) => {
+            const taskNode = elem.getNode();
+
+            if (elem.edit) {
+              elem.setFocus();
+            }
+
+            this.appendNodeTask(taskNode);
+          });
+        }
+      });
+    })
+  }
+
+  editNameListOnWrite = (node, childNode) => {
+    let saveButton = undefined;
+
+    if (!this.editTitle) {
+      saveButton = document.createElement('button');
+      const saveIcon = document.createElement('i');
+
+      saveIcon.classList.add('icon', 'icon-save');
+      saveButton.classList.add('inner-control__button', 'button');
+      saveButton.addEventListener('click', () => node.blur());
+      saveButton.append(saveIcon);
+
+      childNode.append(saveButton);
+
+      this.editTitle = true;
+    }
+
+    if (node === document.activeElement) {
+      return;
+    }
+
+    node.setAttribute('contenteditable', '');
+    node.focus();
+    node.addEventListener('focusout', () => {
+      if (saveButton) {
+        saveButton.remove();
+      }
+      this.editTitle = false;
+      childNode.classList.remove('active');
+      node.removeAttribute('contenteditable');
+      this.saveNameList(node, childNode)
+    });
+
+    childNode.classList.add('active');
+  }
+
+  editNameListOnDate = (node, date, childNodeTitle) => {
+    date.addEventListener('focusout', () => {
+      if (!date.value) {
+        return;
+      }
+
+      const objectDate = new Date(date.value).toObject();
+
+      node.innerText = `${objectDate.date}.${objectDate.month}.${objectDate.year}`;
+      date.value = '';
+
+      this.saveNameList(node, childNodeTitle);
     });
   }
 
-  renderList() {
-    const noTasks = document.createElement('div');
-    const wrapper = this.node.querySelector('.wrapper');
-    const newWrapper = document.createElement('div');
+  saveNameList = (node, childNode) => {
+    const currentTitle = node.innerText.toString().trim();
 
-    noTasks.innerText = Messages.NO_TASKS;
-    this.noTasks = noTasks;
-    this.nodesTasks = [];
-
-    newWrapper.classList.add('list__content', 'wrapper');
-    wrapper ? wrapper.replaceWith(newWrapper) : this.node.append(newWrapper);
-
-    if (!this.examplesTasks.length) {
-      return this.appendNodeTask(this.noTasks);
+    if (currentTitle.length < 3) {
+      node.innerText = this.elem.name;
+      return console.error(Messages.ERROR_MIN_LENGTH);
     }
 
-    return this.examplesTasks.forEach((elem) => {
-      const taskNode = elem.getNode();
+    if(currentTitle === this.elem.name) {
+      return node.innerText = currentTitle;
+    }
 
-      if (elem.edit) {
-        elem.setFocus();
-      }
+    this.elem.name = currentTitle;
 
-      this.appendNodeTask(taskNode);
-      this.nodesTasks.push(taskNode);
+    const wrapperLoader = document.createElement('div');
+    const loader = document.createElement('div');
+
+    loader.classList.add('wrapper-circle-loader__loader');
+    wrapperLoader.classList.add('wrapper-circle-loader');
+    wrapperLoader.append(loader);
+    childNode.append(wrapperLoader);
+
+    return this.dataController.doer.updateList({ id: this.id, name: currentTitle }).then(() => {
+      this.contentNode.querySelector('.bread_crumbs').querySelector('span').innerText = `/${this.elem.name}`;
+      wrapperLoader.remove()
     });
   }
 
@@ -83,7 +283,16 @@ export default class TodoList {
     newWrapper.classList.add('list__content', 'wrapper');
     newWrapper.append(node);
 
-    return this.node.append(newWrapper);
+    return this.contentNode.append(newWrapper);
+  }
+
+  deleteList() {
+    loading(true);
+
+    this.dataController.doer.deleteList(this.elem.id).then(() => {
+      loading(true);
+      location.href = '/';
+    });
   }
 
   addTask() {
@@ -93,15 +302,12 @@ export default class TodoList {
       done: false,
       edit: true,
     };
-    const newTasks = [...this.tasks];
 
-    newTasks.push(newTask);
-
-    this.tasks = newTasks;
+    this.tasks.push(newTask);
 
     const newTaskExample = new Task(
       newTask,
-      this.node,
+      this.contentNode,
       {
         toggleStatus: this.toggleStatus.bind(this),
         deleteTask: this.deleteTask.bind(this),
@@ -114,17 +320,21 @@ export default class TodoList {
 
     const taskNode = newTaskExample.getNode();
 
-    this.nodesTasks.push(taskNode);
+    if (this.tasks.length === 1) {
+      const wrapper = this.contentNode.querySelector('.wrapper');
+
+      if (!wrapper) {
+        return;
+      }
+
+      wrapper.remove();
+    }
 
     this.appendNodeTask(taskNode);
     newTaskExample.setFocus();
   }
 
   toggleStatus(id) {
-    if (!Number.isInteger(id)) {
-      return console.error(Messages.ERROR_ID);
-    }
-
     const index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -133,41 +343,68 @@ export default class TodoList {
 
     const examplesCurrentTask = this.examplesTasks[index];
     const dataCurrentTask = this.tasks[index];
+    const currentNode = examplesCurrentTask.node;
 
+    examplesCurrentTask.loaded = true;
+
+    const newNode = examplesCurrentTask.getNode();
+
+    currentNode.replaceWith(newNode);
     dataCurrentTask.done = !dataCurrentTask.done;
     examplesCurrentTask.done = dataCurrentTask.done;
-    examplesCurrentTask.toggleClassStatus();
 
-    return this.lsControl.editTask({
+    this.dataController.doer.updateTask({
       id,
+      text: dataCurrentTask.text,
       done: dataCurrentTask.done,
+    }).then(() => {
+      const currentNode = examplesCurrentTask.node;
+
+      examplesCurrentTask.loaded = false;
+
+      const newNode = examplesCurrentTask.getNode();
+
+      currentNode.replaceWith(newNode);
     });
   }
 
   deleteTask(id) {
-    if (!Number.isInteger(id)) {
-      return console.error(Messages.ERROR_ID);
-    }
-
-    const index = this.tasks.findIndex((item) => item.id === id);
+    let index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
       return console.error(Messages.ELEMENT_NOT_FOUND);
     }
-    this.tasks.splice(index, 1);
-    this.examplesTasks[index].node.remove();
-    delete this.examplesTasks[index];
-    this.examplesTasks.splice(index, 1);
-    this.nodesTasks.splice(index, 1);
 
-    return this.lsControl.deleteTask(id);
+    const examplesCurrentTask = this.examplesTasks[index];
+    const currentNode = examplesCurrentTask.node;
+
+    examplesCurrentTask.loaded = true;
+
+    const newNode = examplesCurrentTask.getNode();
+
+    currentNode.replaceWith(newNode);
+
+    this.query = this.query.then(() => {
+      this.dataController.doer.deleteTask(id).then(() => {
+        index = this.tasks.findIndex((item) => item.id === id);
+        this.tasks.splice(index, 1);
+        this.examplesTasks[index].node.remove();
+        delete this.examplesTasks[index];
+        this.examplesTasks.splice(index, 1);
+
+        if (!this.tasks.length) {
+          const newWrapper = document.createElement('div');
+          const wrapper = this.contentNode.querySelector('.wrapper');
+
+          newWrapper.classList.add('list__content', 'wrapper');
+          newWrapper.innerText = Messages.NO_TASKS;
+          wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+        }
+      })
+    });
   }
 
   editTask(id) {
-    if (!Number.isInteger(id)) {
-      return console.error(Messages.ERROR_ID);
-    }
-
     const index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -188,42 +425,61 @@ export default class TodoList {
   }
 
   saveChangeTask(task) {
-    if ((!Number.isInteger(task.id) && task.id !== SystemConstant.NEW_TASK_ID) || typeof (task.text) !== 'string') {
+    if ((!task.id && task.id !== SystemConstant.NEW_TASK_ID) || typeof task.text !== 'string') {
       return console.error(Messages.ERROR_DATA);
     }
+
     if (
       task.id === SystemConstant.NEW_TASK_ID
-            && this.tasks[this.tasks.length - 1].id === SystemConstant.NEW_TASK_ID
+        && this.tasks[this.tasks.length - 1].id === SystemConstant.NEW_TASK_ID
     ) {
       if (task.text === '') {
-        this.nodesTasks[this.nodesTasks.length - 1].remove();
+        this.examplesTasks[this.examplesTasks.length - 1].node.remove();
         delete this.examplesTasks[this.examplesTasks.length - 1];
-        this.examplesTasks = this.examplesTasks.splice(this.examplesTasks.length - 1, 1);
-        this.nodesTasks = this.nodesTasks.splice(this.examplesTasks.length - 1, 1);
+        this.examplesTasks.splice(this.examplesTasks.length - 1, 1);
+        this.tasks.splice(this.tasks.length - 1, 1);
+
+        if (!this.tasks.length) {
+          const newWrapper = document.createElement('div');
+          const wrapper = this.contentNode.querySelector('.wrapper');
+
+          newWrapper.classList.add('list__content', 'wrapper');
+          newWrapper.innerText = Messages.NO_TASKS;
+          wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+        }
 
         return false;
       }
 
-      const idNewTask = this.lsControl.addTask({
-        text: task.text,
-        done: false,
+      const examplesCurrentTask = this.examplesTasks[this.examplesTasks.length - 1];
+      const currentNode = examplesCurrentTask.node;
+      const index = this.tasks.length - 1;
+
+      examplesCurrentTask.loaded = true;
+      examplesCurrentTask.edit = false;
+
+      const newNode = examplesCurrentTask.getNode();
+
+      currentNode.replaceWith(newNode);
+
+      this.dataController.doer.createTask(this.id, task.text).then((idNewTask) => {
+        const currentNode = examplesCurrentTask.node;
+
+        examplesCurrentTask.loaded = false;
+
+        const newNode = examplesCurrentTask.getNode();
+
+        currentNode.replaceWith(newNode);
+
+        this.tasks[index].id = idNewTask;
+        this.tasks[index].text = task.text;
+        this.examplesTasks[index].updateDataTask({
+          id: idNewTask,
+          text: task.text,
+          done: false,
+          edit: false,
+        });
       });
-
-      this.tasks[this.tasks.length - 1].id = idNewTask;
-      this.tasks[this.tasks.length - 1].text = task.text;
-      this.examplesTasks[this.examplesTasks.length - 1].updateDataTask({
-        id: idNewTask,
-        text: task.text,
-        done: false,
-        edit: false,
-      });
-
-      const newNodeTask = this.examplesTasks[this.examplesTasks.length - 1].getNode();
-
-      this.nodesTasks[this.nodesTasks.length - 1].replaceWith(newNodeTask);
-      this.nodesTasks[this.nodesTasks.length - 1] = newNodeTask;
-
-      return true;
     }
 
     const index = this.tasks.findIndex((item) => item.id === task.id);
@@ -255,24 +511,35 @@ export default class TodoList {
       return oldNode.replaceWith(newNode);
     }
 
+    const currentNode = exampleCurrentTask.node;
+
+    exampleCurrentTask.loaded = true;
+    exampleCurrentTask.edit = false;
+
+    const newNodeLoaded = exampleCurrentTask.getNode();
+
+    currentNode.replaceWith(newNodeLoaded);
+
     if (task.text === '') {
       return this.deleteTask(task.id);
     }
 
-    const oldNode = exampleCurrentTask.node;
-
-    dataCurrentTask.edit = false;
-    dataCurrentTask.done = false;
-    exampleCurrentTask.edit = false;
-    exampleCurrentTask.done = false;
-
-    const newNode = exampleCurrentTask.getNode();
-
-    oldNode.replaceWith(newNode);
-
-    return this.lsControl.editTask({
+    this.dataController.doer.updateTask({
       ...task,
       done: false,
+    }).then(() => {
+      const oldNode = exampleCurrentTask.node;
+
+      dataCurrentTask.edit = false;
+      dataCurrentTask.done = false;
+      dataCurrentTask.text = task.text;
+      exampleCurrentTask.edit = false;
+      exampleCurrentTask.done = false;
+      exampleCurrentTask.loaded = false;
+
+      const newNode = exampleCurrentTask.getNode();
+
+      oldNode.replaceWith(newNode);
     });
   }
 }

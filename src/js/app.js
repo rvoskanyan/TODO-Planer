@@ -1,19 +1,24 @@
-import LsControl from './LsControl';
+import Lists from './Lists';
 import TodoList from './TodoList';
+import Router from './Router';
+import DataController from './workerService/DataController';
+import { workers } from './constants';
 
 import '../styles/main.scss';
 
-const lsControl = new LsControl();
 const arrayInitElements = document.querySelectorAll('.todo-list-init');
-const tasks = lsControl.getListTasks();
+const dataController = new DataController(workers.server);
+const router = new Router({
+  mode: 'history',
+  root: '/',
+});
 
-arrayInitElements.forEach((node) => {
-  const nodeDubl = node;
-  nodeDubl.innerHTML = `
-      <div class="container__when when">
-          <div class="when__date input-wrapper">
-              <input type="date" class="input todo-list-init-date">
-          </div>
+function renderFrame(node) {
+  const copyNode = node;
+
+  copyNode.innerHTML = `
+      <div class="preloader loaded">
+          <div class="preloader__row"></div>
       </div>
       <div class="container__list list">
           <div class="list__head separator">
@@ -25,22 +30,41 @@ arrayInitElements.forEach((node) => {
               <div class="separator__item"></div>
           </div>
           <div class="todo-list-init-content">
+              <div class="todo-init-title-container wrapper-title">
+                  
+              </div>
               <div class="list__content wrapper"></div>
           </div>
       </div>
-      <div class="container__control control">
-          <!--<button class="control__button control__button_move button">
-              <i class="control__icon control__icon_left icon icon-left-open"></i>
-          </button>-->
-          <button class="control__button control__button_add button todo-list-init-content-add-button">
-              <i class="control__icon icon icon-list-add"></i>
-          </button>
-          <!--<button class="control__button control__button_move control__button_right button">
-              <i class="control__icon control__icon_right icon icon-right-open"></i>
-          </button>-->
-      </div>`;
+      <div class="container__control control todo-list-init-control"></div>`;
 
-  const todoList = new TodoList({ tasks }, nodeDubl.querySelector('.todo-list-init-content'), lsControl, node);
+  return copyNode;
+}
 
-  nodeDubl.querySelector('.todo-list-init-content-add-button').addEventListener('click', todoList.addTask.bind(todoList));
-});
+Date.prototype.toObject = function () {
+  return {
+    date: `0${this.getDate()}`.slice(-2),
+    month: `0${this.getMonth()}`.slice(-2),
+    year: this.getFullYear(),
+  };
+};
+
+router
+  .add(/listTasks\/(.*)/, (id) => {
+    arrayInitElements.forEach((node) => {
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+        document.querySelector('body').classList.add('mobile');
+      }
+
+      new TodoList(id, renderFrame(node)).renderTasks();
+    });
+  })
+  .add('', () => {
+    arrayInitElements.forEach((node) => {
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+        document.querySelector('body').classList.add('mobile');
+      }
+
+      new Lists(renderFrame(node)).renderLists();
+    });
+  });

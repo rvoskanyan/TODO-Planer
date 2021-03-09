@@ -3,15 +3,15 @@
 .icon-list-add:before {
   content: $icon-list-add;
 }
-.icon-left-open:before {
-  content: $icon-left-open;
-}
-.icon-right-open:before {
-  content: $icon-right-open;
+.icon-save:before {
+  content: $icon-list-save;
 }
 .icon-pencil:before {
   content: $icon-pencil;
 }
 .icon-trash:before {
   content: $icon-trash;
+}
+.icon-list-toList:before {
+  content: $icon-toList;
 }

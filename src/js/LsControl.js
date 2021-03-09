@@ -1,86 +1,127 @@
-import { lsKeyApp } from './constants';
+import { lsKeyApp, resultMessages } from './constants';
 
 export default class LsControl {
+  requestedData = {}
+
   constructor() {
-    const { tasks, date, nextId } = this.getCurrentState();
-
-    this.tasks = tasks;
-    this.date = date;
-    this.nextId = nextId;
+    if (!LsControl._instance) {
+      LsControl._instance = this;
+    }
+    return LsControl._instance;
   }
 
-  getCurrentState() {
-    const state = this.parseState(localStorage.getItem(lsKeyApp), 'from');
-
-    if (state) return state;
-
-    this.initialStartState();
-
-    return this.getCurrentState();
+  static getInstance() {
+    return this._instance;
   }
 
-  initialStartState() {
-    localStorage.setItem(lsKeyApp, this.parseState({
-      date: new Date(),
-      tasks: [],
-      nextId: 1,
-    }, 'to'));
+  getDataByLsKey(lsKey) {
+    return this.requestedData[lsKey] ?
+        this.requestedData[lsKey] :
+        this.requestedData[lsKey] = this.parseState(localStorage.getItem(lsKey), 'from')
   }
 
-  getDate() {
-    return this.date ? this.date : new Date();
+  getItemsByFieldValue(field, value, lsKey) {
+    if (!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if (result) {
+        this.requestedData[lsKey] = result;
+      }
+
+      return;
+    }
+
+    return this.requestedData[lsKey].filter((item) => item[field] === value)
   }
 
-  setDate(date) {
-    this.date = date;
-    this.updateLs();
+  createItem(dataItem, lsKey) {
+    if (!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if (result) {
+        this.requestedData[lsKey] = result;
+      }
+
+      return;
+    }
+
+    const date = new Date().toString();
+
+    this.requestedData[lsKey].push({
+      ...dataItem,
+      id: date.hashCode(),
+      dateCreate: date,
+      dateUpdate: date
+    });
+    this.updateLs(lsKey);
+
+    return this.requestedData[lsKey].id;
+  }
+
+  updateItem(dataItem, lsKey) {
+    if (!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if (result) {
+        this.requestedData[lsKey] = result;
+      }
+
+      return;
+    }
+
+    const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === dataItem.id);
+
+    if (indexItem === undefined) {
+      return resultMessages.error;
+    }
+
+    this.requestedData[lsKey][indexItem] = {
+      ...this.requestedData[lsKey][indexItem],
+      ...dataItem,
+      dateUpdate: new Date().toString()
+    };
+    this.updateLs(lsKey);
+
+    return resultMessages.success;
+  }
+
+  deleteItem(idItem, lsKey) {
+    if (!this.requestedData[lsKey]) {
+      const result = this.parseState(localStorage.getItem(lsKey), 'from')
+      if (result) {
+        this.requestedData[lsKey] = result;
+      }
+
+      return;
+    }
+
+    const indexItem = this.requestedData[lsKey].findIndex((item) => item.id === idItem);
+
+    if (indexItem === undefined) {
+      return resultMessages.error;
+    }
+
+    this.requestedData[lsKey].splice(indexItem, 1);
+
+    return resultMessages.success;
+  }
+
+  updateLs(lsKey) {
+    localStorage.setItem(lsKey, this.parseState(this.requestedData[lsKey], 'to'));
   }
 
   parseState(state, direction) {
-    if (direction === 'from') return JSON.parse(state);
-    if (direction === 'to') return JSON.stringify(state);
+    if (direction === 'from') {
+      return JSON.parse(state);
+    }
+
+    if (direction === 'to') {
+      return JSON.stringify(state);
+    }
 
     return state;
   }
 
-  updateLs() {
-    localStorage.setItem(lsKeyApp, this.parseState({
-      date: this.date,
-      tasks: this.tasks,
-      nextId: this.nextId,
-    }, 'to'));
-  }
+  createCell(lsKey, data = []) {
+    localStorage.setItem(lsKey, this.parseState(data, 'to'));
 
-  getListTasks() {
-    return this.tasks.map((elem) => ({ ...elem }));
-  }
-
-  addTask(task) {
-    const newTask = {
-      ...task,
-      id: this.nextId,
-    };
-
-    this.tasks.push(newTask);
-    this.nextId++;
-
-    this.updateLs();
-
-    return newTask.id;
-  }
-
-  deleteTask(id) {
-    this.tasks.splice(this.tasks.findIndex((item) => item.id === id), 1);
-    this.updateLs();
-  }
-
-  editTask(task) {
-    const index = this.tasks.findIndex((item) => item.id === task.id);
-
-    this.tasks[index] = {
-      ...this.tasks[index],
-      ...task,
-    };
-    this.updateLs();
+    return resultMessages.success;
   }
 }

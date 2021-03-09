@@ -2,6 +2,7 @@ $font-color: #1f8447;
 $background-list-color: #fff;
 $background-input-date: #fff;
 $separator-line-color: #cfc4c4;
+$separator-line-color-hover: #847171;
 $background-control-color: #fff;
 
 $btn-move-color: #317cc8;
@@ -12,8 +13,12 @@ $btn-delete-color: #b21919;
 $icon-color: #5d86ab;
 $icon-control-color: #fff;
 
+$colo-load-item: #337ab7;
+$color-bg-load: rgba(0, 0, 0, 0.3);
+$color-bg-load-circle: transperent;
+
 $icon-list-add: '\e800';
-$icon-left-open: '\e802';
-$icon-right-open: '\e803';
+$icon-list-save: '\e802';
 $icon-pencil: '\e804';
-$icon-trash: '\f1f8';
+$icon-trash: '\e801';
+$icon-toList: '\e803';

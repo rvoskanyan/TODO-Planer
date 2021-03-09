@@ -11,6 +11,7 @@ export default class Task {
     this.text = task.text;
     this.done = task.done;
     this.edit = task.edit;
+    this.loaded = false;
 
     this.toggleStatus = toggleStatus;
     this.deleteTask = deleteTask;
@@ -23,6 +24,11 @@ export default class Task {
     this.text = task.text;
     this.done = task.done;
     this.edit = task.edit;
+
+    const oldNode = this.node;
+
+    this.getNode();
+    oldNode.replaceWith(this.node);
   }
 
   getNode() {
@@ -32,6 +38,16 @@ export default class Task {
     const input = document.createElement('div');
     const iconDelete = document.createElement('i');
     const buttonDelete = document.createElement('button');
+
+    if (this.loaded) {
+      const wrapperLoader = document.createElement('div');
+      const loader = document.createElement('div');
+
+      loader.classList.add('wrapper-circle-loader__loader');
+      wrapperLoader.classList.add('wrapper-circle-loader');
+      wrapperLoader.append(loader);
+      div.append(wrapperLoader);
+    }
 
     div.className = 'item-content';
 
@@ -46,6 +62,21 @@ export default class Task {
     buttonDelete.append(iconDelete);
 
     if (!this.edit) {
+      input.classList.add('item-content__input_animate');
+    } else {
+      const iconSave = document.createElement('i');
+      const buttonSave = document.createElement('button');
+
+      iconSave.classList.add('icon', 'icon-save');
+
+      buttonSave.classList.add('inner-control__button', 'button');
+      buttonSave.addEventListener('click', () => this.handleClickEdit().bind(this));
+      buttonSave.append(iconSave);
+
+      divControls.append(buttonSave);
+    }
+
+    if (!this.edit && !this.loaded) {
       const iconEdit = document.createElement('i');
       const buttonEdit = document.createElement('button');
 
@@ -54,8 +85,9 @@ export default class Task {
       }
 
       input.innerText = this.text;
+      input.setAttribute('data-content', this.text);
       input.onclick = () => {
-        if (document.getSelection().type === TypeEvents.RANGE) return;
+        if (document.getSelection().type === TypeEvents.RANGE) { return; }
         this.handleClickTask();
       };
 
@@ -79,6 +111,7 @@ export default class Task {
         if (e.key === TypeEvents.ENTER) {
           this.handleBlur(input);
         }
+
         return false;
       });
     }
@@ -96,8 +129,13 @@ export default class Task {
   setFocus() {
     const range = document.createRange();
     const sel = window.getSelection();
+    const input = this.node.querySelector('.item-content__input');
 
-    range.selectNodeContents(this.node.querySelector('.item-content__input'));
+    if (!input) {
+      return;
+    }
+
+    range.selectNodeContents(input);
     range.collapse(false);
 
     sel.removeAllRanges();
@@ -109,7 +147,13 @@ export default class Task {
   }
 
   toggleClassStatus() {
-    this.node.querySelector('.item-content__input')
+    const selfNode = this.node.querySelector('.item-content__input');
+
+    if (!selfNode) {
+      return;
+    }
+
+    selfNode
       .classList
       .toggle('item-content__input_delete');
   }
@@ -123,7 +167,8 @@ export default class Task {
   }
 
   handleBlur(node) {
-    const text = node.innerText;
+    const text = node.innerText.trim();
+
     this.text = text;
 
     this.saveChangeTask({
