@@ -18,10 +18,7 @@ function renderFrame(node) {
 
   copyNode.innerHTML = `
       <div class="preloader loaded">
-          <div class="preloader__row">
-              <div class="preloader__item"></div>
-              <div class="preloader__item"></div>
-          </div>
+          <div class="preloader__row"></div>
       </div>
       <div class="container__list list">
           <div class="list__head separator">

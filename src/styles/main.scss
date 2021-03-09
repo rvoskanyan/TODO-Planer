@@ -3,6 +3,10 @@
 @import "icons";
 @import "maps";
 
+body {
+  font-family: AleksandraC;
+}
+
 .preloader {
   position: absolute;
   top: 0;
@@ -12,32 +16,18 @@
   z-index: map-get($zIndex, loader);
 
   &__row {
+    border: 2px solid rgba(0, 0, 0, 0.5);
+    border-radius: 100%;
+    border-top: 2px solid transparent;
+    width: 50px;
+    height: 50px;
+    animation: preloader-rotate 0.45s infinite linear;
     top: 50%;
     left: 50%;
-    width: 70px;
-    height: 70px;
     margin-top: -35px;
     margin-left: -35px;
     text-align: center;
     position: relative;
-    animation: preloader-rotate 2s infinite linear;
-  }
-}
-
-.preloader__item {
-  position: absolute;
-  display: inline-block;
-  top: 0;
-  background-color: $colo-load-item;
-  border-radius: 100%;
-  width: 35px;
-  height: 35px;
-  animation: preloader-bounce 2s infinite ease-in-out;
-
-  &:last-child {
-    top: auto;
-    bottom: 0;
-    animation-delay: -1s;
   }
 }
 
@@ -74,17 +64,6 @@
   }
 }
 
-@keyframes preloader-bounce {
-  0%,
-  100% {
-    transform: scale(0);
-  }
-
-  50% {
-    transform: scale(1);
-  }
-}
-
 html {
   background-color: $font-color;
 }
@@ -104,7 +83,6 @@ body {
 .bread_crumbs {
   padding: 25px 25px 0 25px;
   color: #948e8e;
-  font-family: monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -258,28 +236,44 @@ body {
   &__input {
     font-size: 20px;
     padding: 0;
+    position: relative;
+    opacity: 0.9;
+    color: #494d4d;
     background: repeating-linear-gradient(90deg, transparent 0 7px, $background-list-color 7px 10px), repeating-linear-gradient(transparent 0px 22px, $separator-line-color 20px 23px);
-    font-family: 'Times New Roman';
 
     &_delete {
       text-decoration: line-through;
+
+      &::before {
+        text-decoration: line-through;
+      }
+    }
+
+    &_animate::before {
+      opacity: initial;
+      content: attr(data-content);
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: repeating-linear-gradient(90deg, transparent 0 7px, $background-list-color 7px 10px), repeating-linear-gradient(transparent 0px 22px, $separator-line-color-hover 20px 23px);
+      clip-path: polygon(0% 0%,0% 0%,0% 100%,0% 100%);
+      transition: clip-path 1s ease;
+    }
+
+    &_animate:hover::before {
+      clip-path: polygon(0% 0%,100% 0%,100% 100%,0% 100%);
     }
   }
 
   &__link {
-    color: #6174ff;
+    color: #494d4d;
     text-decoration: none;
     display: block;
     box-sizing: border-box;
-    border-bottom: 2px solid transparent;
-    line-height: 22px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  &__link:hover {
-    border-bottom: 2px solid #6174ff;
   }
 
   &_list {

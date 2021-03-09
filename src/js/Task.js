@@ -61,6 +61,10 @@ export default class Task {
     buttonDelete.addEventListener('click', () => this.handleClickDelete());
     buttonDelete.append(iconDelete);
 
+    if (!this.edit) {
+      input.classList.add('item-content__input_animate');
+    }
+
     if (!this.edit && !this.loaded) {
       const iconEdit = document.createElement('i');
       const buttonEdit = document.createElement('button');
@@ -70,6 +74,7 @@ export default class Task {
       }
 
       input.innerText = this.text;
+      input.setAttribute('data-content', this.text);
       input.onclick = () => {
         if (document.getSelection().type === TypeEvents.RANGE) { return; }
         this.handleClickTask();

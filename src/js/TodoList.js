@@ -40,7 +40,6 @@ export default class TodoList {
     const div = document.createElement('div');
     const marker = document.createElement('div');
     const divControls = document.createElement('div');
-    const input = document.createElement('div');
     const iconDelete = document.createElement('i');
     const buttonDelete = document.createElement('button');
     const link = document.createElement('a');
@@ -59,8 +58,6 @@ export default class TodoList {
 
     divControls.classList.add('content__control', 'inner-control');
 
-    input.classList.add('item-content__input', 'input');
-
     iconDelete.classList.add('icon', 'icon-trash');
 
     if (!this.loaded) {
@@ -70,6 +67,8 @@ export default class TodoList {
       divControls.append(buttonDelete);
     }
 
+    link.classList.add('item-content__input', 'input', 'item-content__input_animate', 'item-content__link');
+    link.setAttribute('data-content', this.elem.name);
     link.href = `/listTasks/${this.elem.id}`;
     link.addEventListener('click', (e) => {
       history.pushState(null, null, `/listTasks/${this.elem.id}`);
@@ -77,11 +76,9 @@ export default class TodoList {
       return false;
     });
     link.text = this.elem.name;
-    link.classList.add('item-content__link');
-    input.append(link);
 
     marker.classList.add('marker');
-    div.prepend(input);
+    div.prepend(link);
     div.append(divControls);
     div.append(marker);
 
