@@ -63,6 +63,17 @@ export default class Task {
 
     if (!this.edit) {
       input.classList.add('item-content__input_animate');
+    } else {
+      const iconSave = document.createElement('i');
+      const buttonSave = document.createElement('button');
+
+      iconSave.classList.add('icon', 'icon-save');
+
+      buttonSave.classList.add('inner-control__button', 'button');
+      buttonSave.addEventListener('click', () => this.handleClickEdit().bind(this));
+      buttonSave.append(iconSave);
+
+      divControls.append(buttonSave);
     }
 
     if (!this.edit && !this.loaded) {
@@ -156,7 +167,7 @@ export default class Task {
   }
 
   handleBlur(node) {
-    const text = node.innerText;
+    const text = node.innerText.trim();
 
     this.text = text;
 

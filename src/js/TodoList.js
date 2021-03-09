@@ -15,6 +15,7 @@ export default class TodoList {
     this.handleDeleteList = handleDeleteList;
     this.query = new Promise((resolve) => resolve());
     this.loaded = false;
+    this.editTitle = false;
   }
 
   createTasks() {
@@ -153,7 +154,10 @@ export default class TodoList {
 
       titleNode.classList.add('todo-list-init-title', 'title');
       titleNode.innerText = result.name;
-      titleNode.addEventListener('click', () => this.editNameListOnWrite(titleNode, childNodeTitle));
+      titleNode.addEventListener('click', (e) => {
+        this.editNameListOnWrite(titleNode, childNodeTitle);
+        e.stopPropagation();
+      });
       childNodeTitle.prepend(titleNode);
       childNodeTitle.classList.add('wrapper-title_list');
       childNodeTitle.addEventListener('click', () => this.editNameListOnWrite(titleNode, childNodeTitle));
@@ -189,6 +193,22 @@ export default class TodoList {
   }
 
   editNameListOnWrite = (node, childNode) => {
+    let saveButton = undefined;
+
+    if (!this.editTitle) {
+      saveButton = document.createElement('button');
+      const saveIcon = document.createElement('i');
+
+      saveIcon.classList.add('icon', 'icon-save');
+      saveButton.classList.add('inner-control__button', 'button');
+      saveButton.addEventListener('click', () => node.blur());
+      saveButton.append(saveIcon);
+
+      childNode.append(saveButton);
+
+      this.editTitle = true;
+    }
+
     if (node === document.activeElement) {
       return;
     }
@@ -196,6 +216,10 @@ export default class TodoList {
     node.setAttribute('contenteditable', '');
     node.focus();
     node.addEventListener('focusout', () => {
+      if (saveButton) {
+        saveButton.remove();
+      }
+      this.editTitle = false;
       childNode.classList.remove('active');
       node.removeAttribute('contenteditable');
       this.saveNameList(node, childNode)
@@ -220,15 +244,18 @@ export default class TodoList {
   }
 
   saveNameList = (node, childNode) => {
-    if (node.innerText.length < 3) {
+    const currentTitle = node.innerText.toString().trim();
+
+    if (currentTitle.length < 3) {
+      node.innerText = this.elem.name;
       return console.error(Messages.ERROR_MIN_LENGTH);
     }
 
-    if(node.innerText === this.elem.name) {
-      return;
+    if(currentTitle === this.elem.name) {
+      return node.innerText = currentTitle;
     }
 
-    this.elem.name = node.innerText;
+    this.elem.name = currentTitle;
 
     const wrapperLoader = document.createElement('div');
     const loader = document.createElement('div');
@@ -238,7 +265,7 @@ export default class TodoList {
     wrapperLoader.append(loader);
     childNode.append(wrapperLoader);
 
-    return this.dataController.doer.updateList({ id: this.id, name: node.innerText }).then(() => {
+    return this.dataController.doer.updateList({ id: this.id, name: currentTitle }).then(() => {
       this.contentNode.querySelector('.bread_crumbs').querySelector('span').innerText = `/${this.elem.name}`;
       wrapperLoader.remove()
     });
@@ -429,6 +456,7 @@ export default class TodoList {
       const index = this.tasks.length - 1;
 
       examplesCurrentTask.loaded = true;
+      examplesCurrentTask.edit = false;
 
       const newNode = examplesCurrentTask.getNode();
 
@@ -486,6 +514,7 @@ export default class TodoList {
     const currentNode = exampleCurrentTask.node;
 
     exampleCurrentTask.loaded = true;
+    exampleCurrentTask.edit = false;
 
     const newNodeLoaded = exampleCurrentTask.getNode();
 
