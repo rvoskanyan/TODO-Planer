@@ -98,6 +98,25 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  position: relative;
+}
+
+.bread_crumbs {
+  padding: 25px 25px 0 25px;
+  color: #948e8e;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  & > a {
+    color: #303030;
+    text-decoration: none;
+  }
+
+  & > a:hover {
+    text-decoration: underline;
+  }
 }
 
 .todo-list-init-content {
@@ -109,7 +128,7 @@ body {
 .container {
   display: flex;
   flex-direction: column;
-  width: 500px;
+  max-width: 500px;
   min-height: 300px;
   max-height: 100vh;
   box-sizing: border-box;
@@ -188,6 +207,7 @@ body {
 
   &_list:hover {
     border-color: #6f7e8d;
+    cursor: text;
   }
 
   &_list:hover > .title-select-date {
@@ -287,7 +307,7 @@ body {
 .content {
   &__control {
     position: absolute;
-    right: -12px;
+    right: -10px;
     top: 1px;
   }
 }
@@ -395,8 +415,21 @@ body {
   display: none;
 }
 
-@media (max-width: 1024px) {
-  .inner-control {
+.mobile {
+  & .todo-list-init {
+    height: 100%;
+  }
+
+  & .inner-control {
     display: initial;
+  }
+
+  & .container {
+    height: 100vh;
+    padding: 0;
+
+    &__list {
+      height: 100%;
+    }
   }
 }

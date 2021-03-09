@@ -6,16 +6,13 @@ class Lists {
   constructor(node) {
     this.node = node;
     this.contentNode = this.node.querySelector('.todo-list-init-content');
+		if (!this.contentNode) {
+			return;
+		}
     this.dataController = new DataController();
 	  this.examplesLists = [];
 	  this.lists = [];
 	  this.query = new Promise((resolve) => resolve());
-
-	  if (!this.contentNode) {
-	  		return;
-		}
-
-    this.renderLists();
   }
 
 	createLists() {
@@ -31,7 +28,7 @@ class Lists {
 		}
 	}
 
-  renderLists() {
+  renderLists = () => {
 		const newWrapper = document.createElement('div');
 		const wrapper = this.contentNode.querySelector('.wrapper');
 		const control = this.node.querySelector('.todo-list-init-control');

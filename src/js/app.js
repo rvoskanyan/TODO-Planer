@@ -12,20 +12,18 @@ const router = new Router({
   mode: 'history',
   root: '/',
 });
-const exampleTodoList = [];
-const exampleLists = [];
 
 function renderFrame(node) {
   const copyNode = node;
 
   copyNode.innerHTML = `
-      <div class="container__list list">
-          <div class="preloader loaded">
-              <div class="preloader__row">
-                  <div class="preloader__item"></div>
-                  <div class="preloader__item"></div>
-              </div>
+      <div class="preloader loaded">
+          <div class="preloader__row">
+              <div class="preloader__item"></div>
+              <div class="preloader__item"></div>
           </div>
+      </div>
+      <div class="container__list list">
           <div class="list__head separator">
               <div class="separator__item"></div>
               <div class="separator__item"></div>
@@ -56,29 +54,20 @@ Date.prototype.toObject = function () {
 
 router
   .add(/listTasks\/(.*)/, (id) => {
-    arrayInitElements.forEach((node, index) => {
-      if (exampleTodoList[index]) {
-        return exampleTodoList[index].renderTasks();
+    arrayInitElements.forEach((node) => {
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+        document.querySelector('body').classList.add('mobile');
       }
 
-      const todoList = new TodoList(id, renderFrame(node));
-
-      todoList.renderTasks();
-      exampleTodoList.push(todoList);
-
-      return true;
+      new TodoList(id, renderFrame(node)).renderTasks();
     });
   })
   .add('', () => {
-    arrayInitElements.forEach((node, index) => {
-      if (exampleLists[index]) {
-        return exampleLists[index].renderLists();
+    arrayInitElements.forEach((node) => {
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+        document.querySelector('body').classList.add('mobile');
       }
 
-      const lists = new Lists(renderFrame(node));
-
-      exampleLists.push(lists);
-
-      return true;
+      new Lists(renderFrame(node)).renderLists();
     });
   });

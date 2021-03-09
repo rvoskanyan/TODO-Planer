@@ -71,6 +71,11 @@ export default class TodoList {
     }
 
     link.href = `/listTasks/${this.elem.id}`;
+    link.addEventListener('click', (e) => {
+      history.pushState(null, null, `/listTasks/${this.elem.id}`);
+      e.preventDefault()
+      return false;
+    });
     link.text = this.elem.name;
     link.classList.add('item-content__link');
     input.append(link);
@@ -110,7 +115,7 @@ export default class TodoList {
     addButton.title = Titles.addTask;
 
     toListButton.classList.add('control__button', 'control__button_toList', 'button', 'todo-list-init-content-add-button');
-    toListButton.addEventListener('click', () => document.location.href = '/');
+    toListButton.addEventListener('click', () => history.pushState(null, null, '/'));
     toListButton.append(toListIcon);
     toListButton.title = Titles.toList;
 
@@ -131,16 +136,37 @@ export default class TodoList {
       const titleNode = document.createElement('h2');
       const childNodeTitle = this.contentNode.querySelector('.todo-init-title-container');
       const inputDate = document.createElement('input');
+      const breadCrumbs = document.createElement('div');
+      const linkBreadCrumbs = document.createElement('a');
+      const currentPageBreadCrumbs = document.createElement('span');
+
+      currentPageBreadCrumbs.innerText = `/${result.name}`;
+      linkBreadCrumbs.innerText = textContent.titleList;
+      linkBreadCrumbs.href = '/';
+      linkBreadCrumbs.addEventListener('click', (e) => {
+        history.pushState(null, null, '/')
+        e.preventDefault();
+        return false;
+      })
+      breadCrumbs.classList.add('bread_crumbs');
+      breadCrumbs.append(linkBreadCrumbs);
+      breadCrumbs.append(currentPageBreadCrumbs);
+
+      this.contentNode.prepend(breadCrumbs);
 
       titleNode.classList.add('todo-list-init-title', 'title');
       titleNode.innerText = result.name;
       titleNode.addEventListener('click', () => this.editNameListOnWrite(titleNode, childNodeTitle));
       childNodeTitle.prepend(titleNode);
       childNodeTitle.classList.add('wrapper-title_list');
+      childNodeTitle.addEventListener('click', () => this.editNameListOnWrite(titleNode, childNodeTitle));
 
       inputDate.setAttribute('type', 'date');
       inputDate.classList.add('input', 'title-select-date');
-      inputDate.addEventListener('click', () => this.editNameListOnDate(titleNode, inputDate, childNodeTitle));
+      inputDate.addEventListener('click', (e) => {
+        this.editNameListOnDate(titleNode, inputDate, childNodeTitle);
+        e.stopPropagation();
+      });
       childNodeTitle.append(inputDate);
 
       this.elem = result;
@@ -400,6 +426,7 @@ export default class TodoList {
 
       const examplesCurrentTask = this.examplesTasks[this.examplesTasks.length - 1];
       const currentNode = examplesCurrentTask.node;
+      const index = this.tasks.length - 1;
 
       examplesCurrentTask.loaded = true;
 
@@ -416,9 +443,9 @@ export default class TodoList {
 
         currentNode.replaceWith(newNode);
 
-        this.tasks[this.tasks.length - 1].id = idNewTask;
-        this.tasks[this.tasks.length - 1].text = task.text;
-        this.examplesTasks[this.examplesTasks.length - 1].updateDataTask({
+        this.tasks[index].id = idNewTask;
+        this.tasks[index].text = task.text;
+        this.examplesTasks[index].updateDataTask({
           id: idNewTask,
           text: task.text,
           done: false,
