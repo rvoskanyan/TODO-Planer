@@ -63,7 +63,29 @@ export default class TodoList {
 
     if (!this.loaded) {
       buttonDelete.classList.add('inner-control__button', 'button');
-      buttonDelete.addEventListener('click', () => this.handleDeleteList(this.id));
+      buttonDelete.addEventListener('click', () => {
+        const modal = document.getElementById('delete-modal');
+        const okBtn = document.getElementById('delete-modal-y');
+        const cancelBtn = document.getElementById('delete-modal-n');
+        const contentModal = modal.querySelector('.modal__content');
+
+        modal.classList.remove('hidden');
+
+        okBtn.addEventListener('click', () => {
+          this.handleDeleteList(this.id);
+          modal.classList.add('hidden');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+          modal.classList.add('hidden');
+        });
+
+        modal.addEventListener('click', () => {
+          modal.classList.add('hidden');
+        });
+
+        contentModal.addEventListener('click', (e) => e.stopPropagation());
+      });
       buttonDelete.append(iconDelete);
       divControls.append(buttonDelete);
     }
@@ -118,7 +140,29 @@ export default class TodoList {
     toListButton.title = Titles.toList;
 
     deleteButton.classList.add('control__button', 'control__button_delete', 'button', 'todo-list-init-content-add-button');
-    deleteButton.addEventListener('click', () => this.deleteList());
+    deleteButton.addEventListener('click', () => {
+      const modal = document.getElementById('delete-modal');
+      const okBtn = document.getElementById('delete-modal-y');
+      const cancelBtn = document.getElementById('delete-modal-n');
+      const contentModal = modal.querySelector('.modal__content');
+
+      modal.classList.remove('hidden');
+
+      okBtn.addEventListener('click', () => {
+        this.deleteList();
+        modal.classList.add('hidden');
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+      });
+
+      modal.addEventListener('click', () => {
+        modal.classList.add('hidden');
+      });
+
+      contentModal.addEventListener('click', (e) => e.stopPropagation());
+    });
     deleteButton.append(deleteIcon);
     deleteButton.title = Titles.deleteList;
 

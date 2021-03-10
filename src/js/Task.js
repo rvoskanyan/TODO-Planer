@@ -146,20 +146,28 @@ export default class Task {
     this.toggleStatus(this.id);
   }
 
-  toggleClassStatus() {
-    const selfNode = this.node.querySelector('.item-content__input');
-
-    if (!selfNode) {
-      return;
-    }
-
-    selfNode
-      .classList
-      .toggle('item-content__input_delete');
-  }
-
   handleClickDelete() {
-    this.deleteTask(this.id);
+    const modal = document.getElementById('delete-modal');
+    const okBtn = document.getElementById('delete-modal-y');
+    const cancelBtn = document.getElementById('delete-modal-n');
+    const contentModal = modal.querySelector('.modal__content');
+
+    modal.classList.remove('hidden');
+
+    okBtn.addEventListener('click', () => {
+      this.deleteTask(this.id);
+      modal.classList.add('hidden');
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    modal.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    contentModal.addEventListener('click', (e) => e.stopPropagation());
   }
 
   handleClickEdit() {

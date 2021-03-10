@@ -7,6 +7,84 @@ body {
   font-family: AleksandraC;
 }
 
+.button {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: $modal-bg;
+  z-index: map-get($zIndex, modal);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.hidden {
+    display: none;
+  }
+
+  &-head {
+    &__title {
+      margin: 0;
+      font-size: 30px;
+      color: $modal-title-color;
+    }
+  }
+
+  &__btn {
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 17px;
+    color: #fff;
+
+    &_ok {
+      background-color: #26952e;
+    }
+
+    &_cancel {
+      background-color: #b21919;
+    }
+
+    &:hover {
+      opacity: 0.9;
+      transform: scale(1.05, 1.05);
+    }
+  }
+
+  &__content {
+    background-color: $modal-content-bg;
+    max-width: 500px;
+    opacity: 1;
+    border-radius: 10px;
+  }
+
+  &__head {
+    padding: 20px;
+  }
+
+  &__body {
+    border-top: 1px solid $modal-border-color;
+    padding: 20px;
+
+    & > p {
+      margin: 0;
+      font-size: 20px;
+    }
+  }
+
+  &__footer {
+    border-top: 1px solid $modal-border-color;
+    padding: 20px;
+  }
+}
+
 .preloader {
   position: absolute;
   top: 0;
@@ -16,7 +94,7 @@ body {
   z-index: map-get($zIndex, loader);
 
   &__row {
-    border: 2px solid rgba(0, 0, 0, 0.5);
+    border: 2px solid $loader-border;
     border-radius: 100%;
     border-top: 2px solid transparent;
     width: 50px;
@@ -49,7 +127,7 @@ body {
   cursor: default;
 
   &__loader {
-    border: 2px solid rgba(0, 0, 0, 0.5);
+    border: 2px solid $loader-border;
     border-radius: 100%;
     border-top: 2px solid transparent;
     width: 15px;
@@ -82,13 +160,13 @@ body {
 
 .bread_crumbs {
   padding: 25px 25px 0 25px;
-  color: #948e8e;
+  color: $bread-crumbs-color;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
   & > a {
-    color: #303030;
+    color: $bread-crumbs-link-color;
     text-decoration: none;
   }
 
@@ -180,11 +258,11 @@ body {
   position: relative;
 
   &.active {
-    border-color: #317cc8!important;
+    border-color: $border-title-active-color!important;
   }
 
   &_list:hover {
-    border-color: #6f7e8d;
+    border-color: $border-title-list-color;
     cursor: text;
   }
 
@@ -218,7 +296,7 @@ body {
 .marker {
   width: 12px;
   height: 12px;
-  background-color: rgba(255, 0, 0, 0.5);
+  background-color: $marker-color;
   border-radius: 100%;
   position: absolute;
   left: 0;
@@ -238,7 +316,7 @@ body {
     padding: 0;
     position: relative;
     opacity: 0.9;
-    color: #494d4d;
+    color: $item-content-input-color;
     background: repeating-linear-gradient(90deg, transparent 0 7px, $background-list-color 7px 10px), repeating-linear-gradient(transparent 0px 22px, $separator-line-color 20px 23px);
 
     &_delete {
@@ -267,7 +345,7 @@ body {
   }
 
   &__link {
-    color: #494d4d;
+    color: $item-content-input-color;
     text-decoration: none;
     display: block;
     box-sizing: border-box;
@@ -310,14 +388,6 @@ body {
   margin-top: 10px;
 }
 
-.button {
-  background: none;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 0;
-}
-
 .control {
   background-color: $background-control-color;
   margin-top: 15px;
@@ -355,7 +425,7 @@ body {
   }
 
   &__button:hover {
-    box-shadow: 1px 2px 10px rgba(0, 0, 0, 0.8);
+    box-shadow: 1px 2px 10px $btn-hover-shadow-color;
     transform: scale(1.05, 1.05);
   }
 
@@ -400,7 +470,7 @@ body {
 
   &:hover {
     &:before {
-      color: #5d9ad1;
+      color: $icon-hover-color;
     }
   }
 }
