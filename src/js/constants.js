@@ -43,3 +43,10 @@ export const resultMessages = {
 export const textContent = {
   titleList: 'Оглавление',
 };
+
+export const deleteModal = {
+  title: 'Подтвердите действие',
+  okTitle: 'Подтвердить',
+  cancelTitle: 'Отменить',
+  content: '<p>Вы действительно хотите удалить запись?</p>',
+};

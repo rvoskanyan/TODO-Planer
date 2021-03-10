@@ -1,7 +1,8 @@
 import DataController from './workerService/DataController';
 import Task from './Task';
-import { Messages, SystemConstant, textContent, Titles } from './constants';
+import { deleteModal, Messages, SystemConstant, textContent, Titles } from './constants';
 import { loading } from './utils';
+import Modal from './ServiceModal';
 
 export default class TodoList {
   constructor(id, node, elem = {}, handleDeleteList = undefined) {
@@ -64,27 +65,11 @@ export default class TodoList {
     if (!this.loaded) {
       buttonDelete.classList.add('inner-control__button', 'button');
       buttonDelete.addEventListener('click', () => {
-        const modal = document.getElementById('delete-modal');
-        const okBtn = document.getElementById('delete-modal-y');
-        const cancelBtn = document.getElementById('delete-modal-n');
-        const contentModal = modal.querySelector('.modal__content');
-
-        modal.classList.remove('hidden');
-
-        okBtn.addEventListener('click', () => {
-          this.handleDeleteList(this.id);
-          modal.classList.add('hidden');
+        const deleteModalObject = new Modal({
+          ...deleteModal,
+          okHandler: () => this.handleDeleteList(this.id, deleteModalObject),
+          cancelHandler: true,
         });
-
-        cancelBtn.addEventListener('click', () => {
-          modal.classList.add('hidden');
-        });
-
-        modal.addEventListener('click', () => {
-          modal.classList.add('hidden');
-        });
-
-        contentModal.addEventListener('click', (e) => e.stopPropagation());
       });
       buttonDelete.append(iconDelete);
       divControls.append(buttonDelete);
@@ -141,27 +126,11 @@ export default class TodoList {
 
     deleteButton.classList.add('control__button', 'control__button_delete', 'button', 'todo-list-init-content-add-button');
     deleteButton.addEventListener('click', () => {
-      const modal = document.getElementById('delete-modal');
-      const okBtn = document.getElementById('delete-modal-y');
-      const cancelBtn = document.getElementById('delete-modal-n');
-      const contentModal = modal.querySelector('.modal__content');
-
-      modal.classList.remove('hidden');
-
-      okBtn.addEventListener('click', () => {
-        this.deleteList();
-        modal.classList.add('hidden');
+      const deleteModalObject = new Modal({
+        ...deleteModal,
+        okHandler: () => this.deleteList(deleteModalObject),
+        cancelHandler: true,
       });
-
-      cancelBtn.addEventListener('click', () => {
-        modal.classList.add('hidden');
-      });
-
-      modal.addEventListener('click', () => {
-        modal.classList.add('hidden');
-      });
-
-      contentModal.addEventListener('click', (e) => e.stopPropagation());
     });
     deleteButton.append(deleteIcon);
     deleteButton.title = Titles.deleteList;
@@ -330,13 +299,21 @@ export default class TodoList {
     return this.contentNode.append(newWrapper);
   }
 
-  deleteList() {
-    loading(true);
+  deleteList(deleteModalObject) {
+    deleteModalObject.toggleLoader();
 
-    this.dataController.doer.deleteList(this.elem.id).then(() => {
+    new Promise((resolve) => {
+      setTimeout(resolve, 500)
+    }).then(() => {
+      deleteModalObject.close();
+
       loading(true);
-      location.href = '/';
-    });
+
+      this.dataController.doer.deleteList(this.elem.id).then(() => {
+        loading(true);
+        location.href = '/';
+      });
+    })
   }
 
   addTask() {
@@ -412,7 +389,11 @@ export default class TodoList {
     });
   }
 
-  deleteTask(id) {
+  deleteTask(id, deleteModalObject = undefined) {
+    if (deleteModalObject) {
+      deleteModalObject.toggleLoader();
+    }
+
     let index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -430,6 +411,10 @@ export default class TodoList {
 
     this.query = this.query.then(() => {
       this.dataController.doer.deleteTask(id).then(() => {
+        if (deleteModalObject) {
+          deleteModalObject.close();
+        }
+
         index = this.tasks.findIndex((item) => item.id === id);
         this.tasks.splice(index, 1);
         this.examplesTasks[index].node.remove();
@@ -515,14 +500,17 @@ export default class TodoList {
 
         currentNode.replaceWith(newNode);
 
-        this.tasks[index].id = idNewTask;
+        this.tasks[index].id = idNewTask.id;
         this.tasks[index].text = task.text;
-        this.examplesTasks[index].updateDataTask({
-          id: idNewTask,
-          text: task.text,
-          done: false,
-          edit: false,
-        });
+        this.examplesTasks[index].id = idNewTask.id;
+        this.examplesTasks[index].text = task.text;
+        this.examplesTasks[index].done = false;
+        this.examplesTasks[index].edit = false;
+
+        const oldNode = this.examplesTasks[index].node;
+
+        const newNodeTask = this.examplesTasks[index].getNode();
+        oldNode.replaceWith(newNodeTask);
       });
     }
 

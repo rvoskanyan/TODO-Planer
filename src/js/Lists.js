@@ -122,7 +122,7 @@ class Lists {
 			})
 	}
 
-	deleteList = (id) => {
+	deleteList = (id, deleteModalObject) => {
 		let index = this.lists.findIndex((item) => item.id === id);
 
 		if (index === -1) {
@@ -138,8 +138,12 @@ class Lists {
 
 		currentNode.replaceWith(newNode);
 
+		deleteModalObject.toggleLoader();
+
 		this.query = this.query.then(() => {
 			this.dataController.doer.deleteList(id).then(() => {
+				deleteModalObject.close();
+
 				index = this.lists.findIndex((item) => item.id === id);
 
 				this.lists.splice(index, 1);

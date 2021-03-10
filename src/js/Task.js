@@ -1,4 +1,5 @@
-import { TypeEvents } from './constants';
+import { deleteModal, TypeEvents } from './constants';
+import Modal from './ServiceModal';
 
 export default class Task {
   constructor(task, parentNode, {
@@ -17,18 +18,6 @@ export default class Task {
     this.deleteTask = deleteTask;
     this.saveChangeTask = saveChangeTask;
     this.editTask = editTask;
-  }
-
-  updateDataTask(task) {
-    this.id = task.id;
-    this.text = task.text;
-    this.done = task.done;
-    this.edit = task.edit;
-
-    const oldNode = this.node;
-
-    this.getNode();
-    oldNode.replaceWith(this.node);
   }
 
   getNode() {
@@ -147,27 +136,17 @@ export default class Task {
   }
 
   handleClickDelete() {
-    const modal = document.getElementById('delete-modal');
-    const okBtn = document.getElementById('delete-modal-y');
-    const cancelBtn = document.getElementById('delete-modal-n');
-    const contentModal = modal.querySelector('.modal__content');
+    if (this.text.length > 50) {
+      const deleteModalObject = new Modal({
+        ...deleteModal,
+        okHandler: () => this.deleteTask(this.id, deleteModalObject),
+        cancelHandler: true,
+      });
 
-    modal.classList.remove('hidden');
+      return true;
+    }
 
-    okBtn.addEventListener('click', () => {
-      this.deleteTask(this.id);
-      modal.classList.add('hidden');
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      modal.classList.add('hidden');
-    });
-
-    modal.addEventListener('click', () => {
-      modal.classList.add('hidden');
-    });
-
-    contentModal.addEventListener('click', (e) => e.stopPropagation());
+    return this.deleteTask(this.id);
   }
 
   handleClickEdit() {
