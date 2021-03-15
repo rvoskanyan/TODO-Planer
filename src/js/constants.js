@@ -53,6 +53,14 @@ export const deleteModal = {
   content: '<p>Вы действительно хотите удалить запись?</p>',
 };
 
+export const saveModal = {
+  title: 'Выберите действие',
+  saveTitle: 'Сохранить',
+  backEditTitle: 'Назад к редактированию',
+  cancelTitle: 'Отменить изменения',
+  content: '<p>Вы покинули поле для редактирования, выберите действие для изменений.</p>',
+};
+
 export const typesButton = {
   success: 'success',
   danger: 'danger',
