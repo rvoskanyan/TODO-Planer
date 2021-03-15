@@ -1,6 +1,14 @@
 import DataController from './workerService/DataController';
 import Task from './Task';
-import { deleteModal, Messages, SystemConstant, textContent, Titles } from './constants';
+import {
+  deleteModal,
+  maxCharsDeleteWithoutModal,
+  Messages,
+  SystemConstant,
+  textContent,
+  Titles,
+  typesButton
+} from './constants';
 import { loading } from './utils';
 import Modal from './ServiceModal';
 
@@ -64,13 +72,7 @@ export default class TodoList {
 
     if (!this.loaded) {
       buttonDelete.classList.add('inner-control__button', 'button');
-      buttonDelete.addEventListener('click', () => {
-        const deleteModalObject = new Modal({
-          ...deleteModal,
-          okHandler: () => this.handleDeleteList(this.id, deleteModalObject),
-          cancelHandler: true,
-        });
-      });
+      buttonDelete.addEventListener('click', () => this.handleDeleteList(this.id));
       buttonDelete.append(iconDelete);
       divControls.append(buttonDelete);
     }
@@ -125,13 +127,7 @@ export default class TodoList {
     toListButton.title = Titles.toList;
 
     deleteButton.classList.add('control__button', 'control__button_delete', 'button', 'todo-list-init-content-add-button');
-    deleteButton.addEventListener('click', () => {
-      const deleteModalObject = new Modal({
-        ...deleteModal,
-        okHandler: () => this.deleteList(deleteModalObject),
-        cancelHandler: true,
-      });
-    });
+    deleteButton.addEventListener('click', this.deleteList);
     deleteButton.append(deleteIcon);
     deleteButton.title = Titles.deleteList;
 
@@ -299,21 +295,38 @@ export default class TodoList {
     return this.contentNode.append(newWrapper);
   }
 
-  deleteList(deleteModalObject) {
-    deleteModalObject.toggleLoader();
+  deleteList = () => {
+    const deleteModalObject = new Modal({
+      title: deleteModal.title,
+      content: deleteModal.content,
+      buttons: [
+        {
+          title: deleteModal.okTitle,
+          callback: () => {
+            deleteModalObject.toggleLoader();
 
-    new Promise((resolve) => {
-      setTimeout(resolve, 500)
-    }).then(() => {
-      deleteModalObject.close();
+            new Promise((resolve) => {
+              setTimeout(resolve, 500)
+            }).then(() => {
+              deleteModalObject.close();
 
-      loading(true);
+              loading(true);
 
-      this.dataController.doer.deleteList(this.elem.id).then(() => {
-        loading(true);
-        location.href = '/';
-      });
-    })
+              this.dataController.doer.deleteList(this.elem.id).then(() => {
+                loading(true);
+                location.href = '/';
+              });
+            })
+          },
+          type: typesButton.success,
+        },
+        {
+          title: deleteModal.cancelTitle,
+          callback: () => deleteModalObject.close(),
+          type: typesButton.danger,
+        }
+      ],
+    });
   }
 
   addTask() {
@@ -389,11 +402,7 @@ export default class TodoList {
     });
   }
 
-  deleteTask(id, deleteModalObject = undefined) {
-    if (deleteModalObject) {
-      deleteModalObject.toggleLoader();
-    }
-
+  deleteTask(id) {
     let index = this.tasks.findIndex((item) => item.id === id);
 
     if (index === -1) {
@@ -401,21 +410,51 @@ export default class TodoList {
     }
 
     const examplesCurrentTask = this.examplesTasks[index];
-    const currentNode = examplesCurrentTask.node;
 
-    examplesCurrentTask.loaded = true;
+    if (examplesCurrentTask.text.length > maxCharsDeleteWithoutModal) {
+      const deleteModalObject = new Modal({
+        title: deleteModal.title,
+        content: deleteModal.content,
+        buttons: [
+          {
+            title: deleteModal.okTitle,
+            callback: () => {
+              this.deleteTaskQuery(examplesCurrentTask, deleteModalObject);
+              deleteModalObject.toggleLoader();
+            },
+            type: typesButton.success,
+          },
+          {
+            title: deleteModal.cancelTitle,
+            callback: () => deleteModalObject.close(),
+            type: typesButton.danger,
+          }
+        ],
+      });
 
-    const newNode = examplesCurrentTask.getNode();
+      return true;
+    }
+
+    this.deleteTaskQuery(examplesCurrentTask);
+  }
+
+  deleteTaskQuery = (example, modal) => {
+    const currentNode = example.node;
+
+    example.loaded = true;
+
+    const newNode = example.getNode();
 
     currentNode.replaceWith(newNode);
 
     this.query = this.query.then(() => {
-      this.dataController.doer.deleteTask(id).then(() => {
-        if (deleteModalObject) {
-          deleteModalObject.close();
+      this.dataController.doer.deleteTask(example.id).then(() => {
+        if (modal) {
+          modal.close();
         }
 
-        index = this.tasks.findIndex((item) => item.id === id);
+        const index = this.tasks.findIndex((item) => item.id === example.id);
+
         this.tasks.splice(index, 1);
         this.examplesTasks[index].node.remove();
         delete this.examplesTasks[index];
@@ -502,10 +541,10 @@ export default class TodoList {
 
         this.tasks[index].id = idNewTask.id;
         this.tasks[index].text = task.text;
-        this.examplesTasks[index].id = idNewTask.id;
-        this.examplesTasks[index].text = task.text;
-        this.examplesTasks[index].done = false;
-        this.examplesTasks[index].edit = false;
+        examplesCurrentTask.id = idNewTask.id;
+        examplesCurrentTask.text = task.text;
+        examplesCurrentTask.done = false;
+        examplesCurrentTask.edit = false;
 
         const oldNode = this.examplesTasks[index].node;
 

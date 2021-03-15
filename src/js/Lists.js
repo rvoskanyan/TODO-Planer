@@ -1,168 +1,188 @@
-import { Messages, textContent, Titles } from './constants';
+import {deleteModal, Messages, textContent, Titles, typesButton} from './constants';
 import DataController from './workerService/DataController';
 import TodoList from './TodoList';
+import Modal from "./ServiceModal";
 
 class Lists {
   constructor(node) {
     this.node = node;
     this.contentNode = this.node.querySelector('.todo-list-init-content');
-		if (!this.contentNode) {
-			return;
-		}
+	  if (!this.contentNode) {
+		  return;
+	  }
     this.dataController = new DataController();
 	  this.examplesLists = [];
 	  this.lists = [];
 	  this.query = new Promise((resolve) => resolve());
   }
 
-	createLists() {
-		if (this.lists.length) {
-			this.lists.forEach((elem) => {
-				this.examplesLists.push(new TodoList(
-					elem.id,
-					this.contentNode,
-					elem,
-					this.deleteList
-				));
-			});
-		}
-	}
+  createLists() {
+    if (this.lists.length) {
+	  this.lists.forEach((elem) => {
+	    this.examplesLists.push(new TodoList(
+	  	elem.id,
+	  	this.contentNode,
+	  	elem,
+	  	this.deleteList
+	    ));
+	  });
+    }
+  }
 
   renderLists = () => {
-		const newWrapper = document.createElement('div');
-		const wrapper = this.contentNode.querySelector('.wrapper');
-		const control = this.node.querySelector('.todo-list-init-control');
-		const addButton = document.createElement('button');
-		const icon = document.createElement('i');
-		const titleNode = document.createElement('h2');
+	const newWrapper = document.createElement('div');
+	const wrapper = this.contentNode.querySelector('.wrapper');
+	const control = this.node.querySelector('.todo-list-init-control');
+	const addButton = document.createElement('button');
+	const icon = document.createElement('i');
+	const titleNode = document.createElement('h2');
 
-		if (!control) {
-			return;
-		}
-
-		titleNode.classList.add('todo-list-init-title', 'title');
-		titleNode.innerText = textContent.titleList;
-		this.contentNode.querySelector('.todo-init-title-container').prepend(titleNode);
-
-		icon.classList.add('control__icon', 'icon', 'icon-list-add');
-
-		addButton.classList.add('control__button', 'control__button_add', 'button', 'todo-list-init-content-add-button');
-		addButton.addEventListener('click', this.addList);
-		addButton.append(icon);
-		addButton.title = Titles.addList;
-
-		newWrapper.classList.add('list__content', 'wrapper');
-		newWrapper.innerText = Messages.NO_LISTS;
-		wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
-
-		control.append(addButton);
-
-		this.dataController.doer.getLists().then((result) => {
-			if (result.length) {
-				newWrapper.remove();
-
-				this.lists = result;
-				this.createLists();
-				this.examplesLists.forEach((elem) => {
-					const listNode = elem.getNode();
-
-					this.appendNodeTask(listNode);
-				});
-			}
-		});
+	if (!control) {
+	  return;
 	}
 
-	appendNodeTask = (node) => {
-		const wrapper = this.node.querySelector('.wrapper');
+	titleNode.classList.add('todo-list-init-title', 'title');
+	titleNode.innerText = textContent.titleList;
+	this.contentNode.querySelector('.todo-init-title-container').prepend(titleNode);
 
-		if (wrapper) {
-			return wrapper.append(node);
-		}
+	icon.classList.add('control__icon', 'icon', 'icon-list-add');
 
-		const newWrapper = document.createElement('div');
+	addButton.classList.add('control__button', 'control__button_add', 'button', 'todo-list-init-content-add-button');
+	addButton.addEventListener('click', this.addList);
+	addButton.append(icon);
+	addButton.title = Titles.addList;
 
-		newWrapper.classList.add('list__content', 'wrapper');
-		newWrapper.append(node);
+	newWrapper.classList.add('list__content', 'wrapper');
+	newWrapper.innerText = Messages.NO_LISTS;
+	wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
 
-		return this.contentNode.append(newWrapper);
-	}
+	control.append(addButton);
 
-	addList = () => {
-  	const date = new Date();
-  	const name = `${`0${date.getDate()}`.slice(-2)}.${`0${date.getMonth() + 1}`.slice(-2)}.${date.getFullYear()}`;
+	this.dataController.doer.getLists().then((result) => {
+	  if (result.length) {
+	    newWrapper.remove();
 
-  	this.dataController.doer.createList(name, date.toString())
-			.then((id) => {
-				const newList = { id, name };
+	    this.lists = result;
+	    this.createLists();
+	    this.examplesLists.forEach((elem) => {
+		  const listNode = elem.getNode();
 
-				this.lists.push(newList);
+		  this.appendNodeTask(listNode);
+	    });
+	  }
+	});
+  }
 
-				const newListExample = new TodoList(
-					newList.id,
-					this.contentNode,
-					newList,
-					this.deleteList
-				);
+  appendNodeTask = (node) => {
+    const wrapper = this.node.querySelector('.wrapper');
 
-				this.examplesLists.push(newListExample);
+    if (wrapper) {
+	  return wrapper.append(node);
+    }
 
-				const listNode = newListExample.getNode();
+    const newWrapper = document.createElement('div');
 
-				if (this.lists.length === 1) {
-					const wrapper = this.contentNode.querySelector('.wrapper');
+    newWrapper.classList.add('list__content', 'wrapper');
+    newWrapper.append(node);
 
-					if (!wrapper) {
-						return;
-					}
+    return this.contentNode.append(newWrapper);
+  }
 
-					wrapper.remove();
-				}
+  addList = () => {
+    const date = new Date();
+    const name = `${`0${date.getDate()}`.slice(-2)}.${`0${date.getMonth() + 1}`.slice(-2)}.${date.getFullYear()}`;
 
-				this.appendNodeTask(listNode);
-			})
-	}
+    this.dataController.doer.createList(name, date.toString()).then((id) => {
+	  const newList = { id, name };
 
-	deleteList = (id, deleteModalObject) => {
-		let index = this.lists.findIndex((item) => item.id === id);
+	  this.lists.push(newList);
 
-		if (index === -1) {
-			return console.error(Messages.ELEMENT_NOT_FOUND);
-		}
+	  const newListExample = new TodoList(
+	    newList.id,
+	    this.contentNode,
+	    newList,
+	    this.deleteList
+	  );
 
-		const examplesCurrentList = this.examplesLists[index];
-		const currentNode = examplesCurrentList.node;
+	  this.examplesLists.push(newListExample);
 
-		examplesCurrentList.loaded = true;
+	  const listNode = newListExample.getNode();
 
-		const newNode = examplesCurrentList.getNode();
+	  if (this.lists.length === 1) {
+	    const wrapper = this.contentNode.querySelector('.wrapper');
 
-		currentNode.replaceWith(newNode);
+	    if (!wrapper) {
+		  return;
+	    }
 
-		deleteModalObject.toggleLoader();
+	    wrapper.remove();
+	  }
 
-		this.query = this.query.then(() => {
-			this.dataController.doer.deleteList(id).then(() => {
-				deleteModalObject.close();
+	  this.appendNodeTask(listNode);
+	})
+  }
 
-				index = this.lists.findIndex((item) => item.id === id);
+  deleteList = (id) => {
+    const index = this.lists.findIndex((item) => item.id === id);
 
-				this.lists.splice(index, 1);
-				this.examplesLists[index].node.remove();
+    if (index === -1) {
+	  return console.error(Messages.ELEMENT_NOT_FOUND);
+    }
 
-				delete this.examplesLists[index];
-				this.examplesLists.splice(index, 1);
+    const examplesCurrentList = this.examplesLists[index];
+    const deleteModalObject = new Modal({
+	  title: deleteModal.title,
+	  content: deleteModal.content,
+	  buttons: [
+	    {
+		  title: deleteModal.okTitle,
+		  callback: () => {
+		    deleteModalObject.toggleLoader();
+		    this.deleteListQuery(examplesCurrentList, deleteModalObject);
+		  },
+		  type: typesButton.success,
+	    },
+	    {
+		  title: deleteModal.cancelTitle,
+		  callback: () => deleteModalObject.close(),
+		  type: typesButton.danger,
+	    }
+	  ],
+    });
+  }
 
-				if (!this.lists.length) {
-					const newWrapper = document.createElement('div');
-					const wrapper = this.contentNode.querySelector('.wrapper');
+  deleteListQuery = (example, modal) => {
+    const currentNode = example.node;
 
-					newWrapper.classList.add('list__content', 'wrapper');
-					newWrapper.innerText = Messages.NO_LISTS;
-					wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
-				}
-			})
-		});
-	}
+    example.loaded = true;
+
+    const newNode = example.getNode();
+
+    currentNode.replaceWith(newNode);
+
+    this.query = this.query.then(() => {
+	  this.dataController.doer.deleteList(example.id).then(() => {
+	    modal.close();
+
+	    const index = this.lists.findIndex((item) => item.id === example.id);
+
+	    this.lists.splice(index, 1);
+	    this.examplesLists[index].node.remove();
+
+	    delete this.examplesLists[index];
+	    this.examplesLists.splice(index, 1);
+
+	    if (!this.lists.length) {
+		  const newWrapper = document.createElement('div');
+		  const wrapper = this.contentNode.querySelector('.wrapper');
+
+		  newWrapper.classList.add('list__content', 'wrapper');
+		  newWrapper.innerText = Messages.NO_LISTS;
+		  wrapper ? wrapper.replaceWith(newWrapper) : this.contentNode.append(newWrapper);
+	    }
+	  })
+    });
+  }
 }
 
 export default Lists;

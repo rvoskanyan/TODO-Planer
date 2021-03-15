@@ -1,4 +1,4 @@
-import { deleteModal, TypeEvents } from './constants';
+import {deleteModal, TypeEvents, typesButton} from './constants';
 import Modal from './ServiceModal';
 
 export default class Task {
@@ -136,16 +136,6 @@ export default class Task {
   }
 
   handleClickDelete() {
-    if (this.text.length > 50) {
-      const deleteModalObject = new Modal({
-        ...deleteModal,
-        okHandler: () => this.deleteTask(this.id, deleteModalObject),
-        cancelHandler: true,
-      });
-
-      return true;
-    }
-
     return this.deleteTask(this.id);
   }
 

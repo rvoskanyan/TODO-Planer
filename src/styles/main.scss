@@ -44,12 +44,16 @@ body {
     font-size: 17px;
     color: #fff;
 
-    &_ok {
-      background-color: #26952e;
+    &_success {
+      background-color: $btn-success-color;
     }
 
-    &_cancel {
-      background-color: #b21919;
+    &_danger {
+      background-color: $btn-danger-color;
+    }
+
+    &_primary {
+      background-color: $btn-primary-color;
     }
 
     &:hover {

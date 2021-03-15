@@ -17,6 +17,8 @@ export const Messages = {
   ERROR_DATA: 'Ошибка данных!',
   NOT_SAVE: 'Элемент не найден, данные не сохранены!',
   ERROR_MIN_LENGTH: 'Ошибка количества символов',
+  ERROR_TITLE_BUTTON: 'Неверный формат заголовка кнопки модального окна',
+  ERROR_CALLBACK_BUTTON: 'Неверный формат обработчика кнопки модального окна',
 };
 
 export const Titles = {
@@ -50,3 +52,11 @@ export const deleteModal = {
   cancelTitle: 'Отменить',
   content: '<p>Вы действительно хотите удалить запись?</p>',
 };
+
+export const typesButton = {
+  success: 'success',
+  danger: 'danger',
+  primary: 'primary',
+}
+
+export const maxCharsDeleteWithoutModal = 50;
