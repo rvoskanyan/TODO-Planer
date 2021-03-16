@@ -19,6 +19,7 @@ export const Messages = {
   ERROR_MIN_LENGTH: 'Ошибка количества символов',
   ERROR_TITLE_BUTTON: 'Неверный формат заголовка кнопки модального окна',
   ERROR_CALLBACK_BUTTON: 'Неверный формат обработчика кнопки модального окна',
+  ERROR_CONTENT_MODAL: 'Отсутствует контент модального окна!',
 };
 
 export const Titles = {

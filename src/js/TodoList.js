@@ -25,6 +25,16 @@ export default class TodoList {
     this.query = new Promise((resolve) => resolve());
     this.loaded = false;
     this.editTitle = false;
+
+    this.confirmDeleteModal = new Modal({
+      title: deleteModal.title,
+      content: deleteModal.content,
+    });
+
+    this.confirmSaveModal = new Modal({
+      title: saveModal.title,
+      content: saveModal.content,
+    });
   }
 
   createTasks() {
@@ -260,45 +270,42 @@ export default class TodoList {
       return node.innerText = currentTitle;
     }
 
-    const saveModalObject = new Modal({
-      title: saveModal.title,
-      content: saveModal.content,
-      buttons: [
-        {
-          title: saveModal.saveTitle,
-          callback: () => {
-            saveModalObject.toggleLoader();
-            this.saveNameListQuery(node, childNode, saveModalObject);
-          },
-          type: typesButton.success,
-        },
-        {
+    this.confirmSaveModal.buttons = [
+      {
+        title: saveModal.saveTitle,
+        callback: () => this.saveNameListQuery(node, childNode),
+        type: typesButton.success,
+      },
+      {
         title: saveModal.backEditTitle,
-          callback: () => {
-            this.editNameListOnWrite(node, childNode);
-            saveModalObject.close();
-          },
-          type: typesButton.primary,
+        callback: () => {
+          this.editNameListOnWrite(node, childNode);
+          this.confirmSaveModal.close();
         },
-        {
-          title: deleteModal.cancelTitle,
-          callback: () => {
-            saveModalObject.close();
-            node.innerText = this.elem.name;
-          },
-          type: typesButton.danger,
-        }
-      ],
-    });
+        type: typesButton.primary,
+      },
+      {
+        title: deleteModal.cancelTitle,
+        callback: () => {
+          this.confirmSaveModal.close();
+          node.innerText = this.elem.name;
+        },
+        type: typesButton.danger,
+      }
+    ];
+
+    this.confirmSaveModal.renderModal();
   }
 
-  saveNameListQuery = (node, childNode, modal) => {
+  saveNameListQuery = (node, childNode) => {
     const currentTitle = node.innerText.toString().trim();
 
     if (currentTitle.length < 3) {
       node.innerText = this.elem.name;
       return console.error(Messages.ERROR_MIN_LENGTH);
     }
+
+    this.confirmSaveModal.toggleLoader();
 
     this.elem.name = currentTitle;
 
@@ -311,7 +318,7 @@ export default class TodoList {
     childNode.append(wrapperLoader);
 
     return this.dataController.doer.updateList({ id: this.id, name: currentTitle }).then(() => {
-      modal.close();
+      this.confirmSaveModal.close();
       this.contentNode.querySelector('.bread_crumbs').querySelector('span').innerText = `/${this.elem.name}`;
       wrapperLoader.remove()
     });
@@ -333,36 +340,36 @@ export default class TodoList {
   }
 
   deleteList = () => {
-    const deleteModalObject = new Modal({
-      title: deleteModal.title,
-      content: deleteModal.content,
-      buttons: [
-        {
-          title: deleteModal.okTitle,
-          callback: () => {
-            deleteModalObject.toggleLoader();
+    this.confirmDeleteModal.buttons = [
+      {
+        title: deleteModal.okTitle,
+        callback: this.onDeleteList,
+        type: typesButton.success,
+      },
+      {
+        title: deleteModal.cancelTitle,
+        callback: this.confirmDeleteModal.close,
+        type: typesButton.danger,
+      }
+    ];
 
-            new Promise((resolve) => {
-              setTimeout(resolve, 500)
-            }).then(() => {
-              deleteModalObject.close();
+    this.confirmDeleteModal.renderModal();
+  }
 
-              loading(true);
+  onDeleteList = () => {
+    this.confirmDeleteModal.toggleLoader();
 
-              this.dataController.doer.deleteList(this.elem.id).then(() => {
-                loading(true);
-                location.href = '/';
-              });
-            })
-          },
-          type: typesButton.success,
-        },
-        {
-          title: deleteModal.cancelTitle,
-          callback: () => deleteModalObject.close(),
-          type: typesButton.danger,
-        }
-      ],
+    new Promise((resolve) => {
+      setTimeout(resolve, 500)
+    }).then(() => {
+      this.confirmDeleteModal.close();
+
+      loading(true);
+
+      this.dataController.doer.deleteList(this.elem.id).then(() => {
+        loading(true);
+        location.href = '/';
+      });
     });
   }
 
@@ -449,25 +456,23 @@ export default class TodoList {
     const examplesCurrentTask = this.examplesTasks[index];
 
     if (examplesCurrentTask.text.length > maxCharsDeleteWithoutModal) {
-      const deleteModalObject = new Modal({
-        title: deleteModal.title,
-        content: deleteModal.content,
-        buttons: [
-          {
-            title: deleteModal.okTitle,
-            callback: () => {
-              this.deleteTaskQuery(examplesCurrentTask, deleteModalObject);
-              deleteModalObject.toggleLoader();
-            },
-            type: typesButton.success,
+      this.confirmDeleteModal.buttons = [
+        {
+          title: deleteModal.okTitle,
+          callback: () => {
+            this.deleteTaskQuery(examplesCurrentTask);
+            this.confirmDeleteModal.toggleLoader();
           },
-          {
-            title: deleteModal.cancelTitle,
-            callback: () => deleteModalObject.close(),
-            type: typesButton.danger,
-          }
-        ],
-      });
+          type: typesButton.success,
+        },
+        {
+          title: deleteModal.cancelTitle,
+          callback: this.confirmDeleteModal.close,
+          type: typesButton.danger,
+        }
+      ];
+
+      this.confirmDeleteModal.renderModal();
 
       return true;
     }
@@ -475,7 +480,7 @@ export default class TodoList {
     this.deleteTaskQuery(examplesCurrentTask);
   }
 
-  deleteTaskQuery = (example, modal) => {
+  deleteTaskQuery = (example) => {
     const currentNode = example.node;
 
     example.loaded = true;
@@ -486,8 +491,8 @@ export default class TodoList {
 
     this.query = this.query.then(() => {
       this.dataController.doer.deleteTask(example.id).then(() => {
-        if (modal) {
-          modal.close();
+        if (this.confirmDeleteModal) {
+          this.confirmDeleteModal.close();
         }
 
         const index = this.tasks.findIndex((item) => item.id === example.id);
@@ -622,50 +627,49 @@ export default class TodoList {
       return oldNode.replaceWith(newNode);
     }
 
-    const saveModalObject = new Modal({
-      title: saveModal.title,
-      content: saveModal.content,
-      buttons: [
-        {
-          title: saveModal.saveTitle,
-          callback: () => {
-            saveModalObject.toggleLoader();
-            this.updateTaskQuery(exampleCurrentTask, saveModalObject);
-          },
-          type: typesButton.success,
+    this.confirmSaveModal.buttons = [
+      {
+        title: saveModal.saveTitle,
+        callback: () => this.updateTaskQuery(exampleCurrentTask),
+        type: typesButton.success,
+      },
+      {
+        title: saveModal.backEditTitle,
+        callback: () => {
+          exampleCurrentTask.setFocus();
+          this.confirmSaveModal.close();
         },
-        {
-          title: saveModal.backEditTitle,
-          callback: () => {
-            exampleCurrentTask.setFocus();
-            saveModalObject.close();
-          },
-          type: typesButton.primary,
-        },
-        {
-          title: deleteModal.cancelTitle,
-          callback: () => {
-            const oldNode = exampleCurrentTask.node;
+        type: typesButton.primary,
+      },
+      {
+        title: deleteModal.cancelTitle,
+        callback: () => this.cancelChangeTask(exampleCurrentTask, dataCurrentTask),
+        type: typesButton.danger,
+      }
+    ];
 
-            dataCurrentTask.edit = false;
-            exampleCurrentTask.edit = false;
-            exampleCurrentTask.text = dataCurrentTask.text;
-
-            const newNode = exampleCurrentTask.getNode();
-
-            oldNode.replaceWith(newNode);
-            saveModalObject.close();
-          },
-          type: typesButton.danger,
-        }
-      ],
-    });
+    this.confirmSaveModal.renderModal();
   }
 
-  updateTaskQuery = (example, modal) => {
+  cancelChangeTask = (example, data) => {
+    const oldNode = example.node;
+
+    data.edit = false;
+    example.edit = false;
+    example.text = data.text;
+
+    const newNode = example.getNode();
+
+    oldNode.replaceWith(newNode);
+    this.confirmSaveModal.close();
+  }
+
+  updateTaskQuery = (example) => {
     if (example.text === '') {
       return this.deleteTask(example.id);
     }
+
+    this.confirmSaveModal.toggleLoader();
 
     const currentNode = example.node;
 
@@ -695,7 +699,7 @@ export default class TodoList {
       const newNode = example.getNode();
 
       oldNode.replaceWith(newNode);
-      modal.close();
+      this.confirmSaveModal.close();
     });
   }
 }
