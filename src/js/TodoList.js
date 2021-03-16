@@ -3,7 +3,7 @@ import Task from './Task';
 import {
   deleteModal,
   maxCharsDeleteWithoutModal,
-  Messages,
+  Messages, saveModal,
   SystemConstant,
   textContent,
   Titles,
@@ -163,6 +163,18 @@ export default class TodoList {
 
       titleNode.classList.add('todo-list-init-title', 'title');
       titleNode.innerText = result.name;
+      titleNode.addEventListener('blur', (e) => {
+        if(this.saveButton) {
+          this.saveButton.remove();
+        }
+
+        this.editTitle = false;
+        childNodeTitle.classList.remove('active');
+        titleNode.removeAttribute('contenteditable');
+        this.saveNameList(titleNode, childNodeTitle);
+        e.stopPropagation();
+        return false;
+      });
       titleNode.addEventListener('click', (e) => {
         this.editNameListOnWrite(titleNode, childNodeTitle);
         e.stopPropagation();
@@ -202,18 +214,16 @@ export default class TodoList {
   }
 
   editNameListOnWrite = (node, childNode) => {
-    let saveButton = undefined;
-
     if (!this.editTitle) {
-      saveButton = document.createElement('button');
+      this.saveButton = document.createElement('button');
       const saveIcon = document.createElement('i');
 
       saveIcon.classList.add('icon', 'icon-save');
-      saveButton.classList.add('inner-control__button', 'button');
-      saveButton.addEventListener('click', () => node.blur());
-      saveButton.append(saveIcon);
+      this.saveButton.classList.add('inner-control__button', 'button');
+      this.saveButton.addEventListener('click', () => node.blur());
+      this.saveButton.append(saveIcon);
 
-      childNode.append(saveButton);
+      childNode.append(this.saveButton);
 
       this.editTitle = true;
     }
@@ -224,15 +234,6 @@ export default class TodoList {
 
     node.setAttribute('contenteditable', '');
     node.focus();
-    node.addEventListener('focusout', () => {
-      if (saveButton) {
-        saveButton.remove();
-      }
-      this.editTitle = false;
-      childNode.classList.remove('active');
-      node.removeAttribute('contenteditable');
-      this.saveNameList(node, childNode)
-    });
 
     childNode.classList.add('active');
   }
@@ -255,13 +256,48 @@ export default class TodoList {
   saveNameList = (node, childNode) => {
     const currentTitle = node.innerText.toString().trim();
 
+    if (currentTitle === this.elem.name) {
+      return node.innerText = currentTitle;
+    }
+
+    const saveModalObject = new Modal({
+      title: saveModal.title,
+      content: saveModal.content,
+      buttons: [
+        {
+          title: saveModal.saveTitle,
+          callback: () => {
+            saveModalObject.toggleLoader();
+            this.saveNameListQuery(node, childNode, saveModalObject);
+          },
+          type: typesButton.success,
+        },
+        {
+        title: saveModal.backEditTitle,
+          callback: () => {
+            this.editNameListOnWrite(node, childNode);
+            saveModalObject.close();
+          },
+          type: typesButton.primary,
+        },
+        {
+          title: deleteModal.cancelTitle,
+          callback: () => {
+            saveModalObject.close();
+            node.innerText = this.elem.name;
+          },
+          type: typesButton.danger,
+        }
+      ],
+    });
+  }
+
+  saveNameListQuery = (node, childNode, modal) => {
+    const currentTitle = node.innerText.toString().trim();
+
     if (currentTitle.length < 3) {
       node.innerText = this.elem.name;
       return console.error(Messages.ERROR_MIN_LENGTH);
-    }
-
-    if(currentTitle === this.elem.name) {
-      return node.innerText = currentTitle;
     }
 
     this.elem.name = currentTitle;
@@ -275,6 +311,7 @@ export default class TodoList {
     childNode.append(wrapperLoader);
 
     return this.dataController.doer.updateList({ id: this.id, name: currentTitle }).then(() => {
+      modal.close();
       this.contentNode.querySelector('.bread_crumbs').querySelector('span').innerText = `/${this.elem.name}`;
       wrapperLoader.remove()
     });
@@ -551,6 +588,8 @@ export default class TodoList {
         const newNodeTask = this.examplesTasks[index].getNode();
         oldNode.replaceWith(newNodeTask);
       });
+
+      return true;
     }
 
     const index = this.tasks.findIndex((item) => item.id === task.id);
@@ -576,41 +615,87 @@ export default class TodoList {
 
       dataCurrentTask.edit = false;
       exampleCurrentTask.edit = false;
+      exampleCurrentTask.text = task.text;
 
       const newNode = exampleCurrentTask.getNode();
 
       return oldNode.replaceWith(newNode);
     }
 
-    const currentNode = exampleCurrentTask.node;
+    const saveModalObject = new Modal({
+      title: saveModal.title,
+      content: saveModal.content,
+      buttons: [
+        {
+          title: saveModal.saveTitle,
+          callback: () => {
+            saveModalObject.toggleLoader();
+            this.updateTaskQuery(exampleCurrentTask, saveModalObject);
+          },
+          type: typesButton.success,
+        },
+        {
+          title: saveModal.backEditTitle,
+          callback: () => {
+            exampleCurrentTask.setFocus();
+            saveModalObject.close();
+          },
+          type: typesButton.primary,
+        },
+        {
+          title: deleteModal.cancelTitle,
+          callback: () => {
+            const oldNode = exampleCurrentTask.node;
 
-    exampleCurrentTask.loaded = true;
-    exampleCurrentTask.edit = false;
+            dataCurrentTask.edit = false;
+            exampleCurrentTask.edit = false;
+            exampleCurrentTask.text = dataCurrentTask.text;
 
-    const newNodeLoaded = exampleCurrentTask.getNode();
+            const newNode = exampleCurrentTask.getNode();
+
+            oldNode.replaceWith(newNode);
+            saveModalObject.close();
+          },
+          type: typesButton.danger,
+        }
+      ],
+    });
+  }
+
+  updateTaskQuery = (example, modal) => {
+    if (example.text === '') {
+      return this.deleteTask(example.id);
+    }
+
+    const currentNode = example.node;
+
+    example.loaded = true;
+    example.edit = false;
+
+    const newNodeLoaded = example.getNode();
 
     currentNode.replaceWith(newNodeLoaded);
 
-    if (task.text === '') {
-      return this.deleteTask(task.id);
-    }
-
     this.dataController.doer.updateTask({
-      ...task,
+      id: example.id,
+      text: example.text,
       done: false,
     }).then(() => {
-      const oldNode = exampleCurrentTask.node;
+      const oldNode = example.node;
+      const index = this.tasks.findIndex((item) => item.id === example.id);
+      const dataCurrentTask = this.tasks[index];
 
       dataCurrentTask.edit = false;
       dataCurrentTask.done = false;
-      dataCurrentTask.text = task.text;
-      exampleCurrentTask.edit = false;
-      exampleCurrentTask.done = false;
-      exampleCurrentTask.loaded = false;
+      dataCurrentTask.text = example.text;
+      example.edit = false;
+      example.done = false;
+      example.loaded = false;
 
-      const newNode = exampleCurrentTask.getNode();
+      const newNode = example.getNode();
 
       oldNode.replaceWith(newNode);
+      modal.close();
     });
   }
 }
