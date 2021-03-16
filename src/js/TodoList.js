@@ -1,7 +1,16 @@
 import DataController from './workerService/DataController';
 import Task from './Task';
-import { Messages, SystemConstant, textContent, Titles } from './constants';
+import {
+  deleteModal,
+  maxCharsDeleteWithoutModal,
+  Messages, saveModal,
+  SystemConstant,
+  textContent,
+  Titles,
+  typesButton
+} from './constants';
 import { loading } from './utils';
+import Modal from './ServiceModal';
 
 export default class TodoList {
   constructor(id, node, elem = {}, handleDeleteList = undefined) {
@@ -16,6 +25,16 @@ export default class TodoList {
     this.query = new Promise((resolve) => resolve());
     this.loaded = false;
     this.editTitle = false;
+
+    this.confirmDeleteModal = new Modal({
+      title: deleteModal.title,
+      content: deleteModal.content,
+    });
+
+    this.confirmSaveModal = new Modal({
+      title: saveModal.title,
+      content: saveModal.content,
+    });
   }
 
   createTasks() {
@@ -63,29 +82,7 @@ export default class TodoList {
 
     if (!this.loaded) {
       buttonDelete.classList.add('inner-control__button', 'button');
-      buttonDelete.addEventListener('click', () => {
-        const modal = document.getElementById('delete-modal');
-        const okBtn = document.getElementById('delete-modal-y');
-        const cancelBtn = document.getElementById('delete-modal-n');
-        const contentModal = modal.querySelector('.modal__content');
-
-        modal.classList.remove('hidden');
-
-        okBtn.addEventListener('click', () => {
-          this.handleDeleteList(this.id);
-          modal.classList.add('hidden');
-        });
-
-        cancelBtn.addEventListener('click', () => {
-          modal.classList.add('hidden');
-        });
-
-        modal.addEventListener('click', () => {
-          modal.classList.add('hidden');
-        });
-
-        contentModal.addEventListener('click', (e) => e.stopPropagation());
-      });
+      buttonDelete.addEventListener('click', () => this.handleDeleteList(this.id));
       buttonDelete.append(iconDelete);
       divControls.append(buttonDelete);
     }
@@ -140,29 +137,7 @@ export default class TodoList {
     toListButton.title = Titles.toList;
 
     deleteButton.classList.add('control__button', 'control__button_delete', 'button', 'todo-list-init-content-add-button');
-    deleteButton.addEventListener('click', () => {
-      const modal = document.getElementById('delete-modal');
-      const okBtn = document.getElementById('delete-modal-y');
-      const cancelBtn = document.getElementById('delete-modal-n');
-      const contentModal = modal.querySelector('.modal__content');
-
-      modal.classList.remove('hidden');
-
-      okBtn.addEventListener('click', () => {
-        this.deleteList();
-        modal.classList.add('hidden');
-      });
-
-      cancelBtn.addEventListener('click', () => {
-        modal.classList.add('hidden');
-      });
-
-      modal.addEventListener('click', () => {
-        modal.classList.add('hidden');
-      });
-
-      contentModal.addEventListener('click', (e) => e.stopPropagation());
-    });
+    deleteButton.addEventListener('click', this.deleteList);
     deleteButton.append(deleteIcon);
     deleteButton.title = Titles.deleteList;
 
@@ -198,6 +173,18 @@ export default class TodoList {
 
       titleNode.classList.add('todo-list-init-title', 'title');
       titleNode.innerText = result.name;
+      titleNode.addEventListener('blur', (e) => {
+        if(this.saveButton) {
+          this.saveButton.remove();
+        }
+
+        this.editTitle = false;
+        childNodeTitle.classList.remove('active');
+        titleNode.removeAttribute('contenteditable');
+        this.saveNameList(titleNode, childNodeTitle);
+        e.stopPropagation();
+        return false;
+      });
       titleNode.addEventListener('click', (e) => {
         this.editNameListOnWrite(titleNode, childNodeTitle);
         e.stopPropagation();
@@ -237,18 +224,16 @@ export default class TodoList {
   }
 
   editNameListOnWrite = (node, childNode) => {
-    let saveButton = undefined;
-
     if (!this.editTitle) {
-      saveButton = document.createElement('button');
+      this.saveButton = document.createElement('button');
       const saveIcon = document.createElement('i');
 
       saveIcon.classList.add('icon', 'icon-save');
-      saveButton.classList.add('inner-control__button', 'button');
-      saveButton.addEventListener('click', () => node.blur());
-      saveButton.append(saveIcon);
+      this.saveButton.classList.add('inner-control__button', 'button');
+      this.saveButton.addEventListener('click', () => node.blur());
+      this.saveButton.append(saveIcon);
 
-      childNode.append(saveButton);
+      childNode.append(this.saveButton);
 
       this.editTitle = true;
     }
@@ -259,15 +244,6 @@ export default class TodoList {
 
     node.setAttribute('contenteditable', '');
     node.focus();
-    node.addEventListener('focusout', () => {
-      if (saveButton) {
-        saveButton.remove();
-      }
-      this.editTitle = false;
-      childNode.classList.remove('active');
-      node.removeAttribute('contenteditable');
-      this.saveNameList(node, childNode)
-    });
 
     childNode.classList.add('active');
   }
@@ -290,14 +266,46 @@ export default class TodoList {
   saveNameList = (node, childNode) => {
     const currentTitle = node.innerText.toString().trim();
 
+    if (currentTitle === this.elem.name) {
+      return node.innerText = currentTitle;
+    }
+
+    this.confirmSaveModal.buttons = [
+      {
+        title: saveModal.saveTitle,
+        callback: () => this.saveNameListQuery(node, childNode),
+        type: typesButton.success,
+      },
+      {
+        title: saveModal.backEditTitle,
+        callback: () => {
+          this.editNameListOnWrite(node, childNode);
+          this.confirmSaveModal.close();
+        },
+        type: typesButton.primary,
+      },
+      {
+        title: deleteModal.cancelTitle,
+        callback: () => {
+          this.confirmSaveModal.close();
+          node.innerText = this.elem.name;
+        },
+        type: typesButton.danger,
+      }
+    ];
+
+    this.confirmSaveModal.renderModal();
+  }
+
+  saveNameListQuery = (node, childNode) => {
+    const currentTitle = node.innerText.toString().trim();
+
     if (currentTitle.length < 3) {
       node.innerText = this.elem.name;
       return console.error(Messages.ERROR_MIN_LENGTH);
     }
 
-    if(currentTitle === this.elem.name) {
-      return node.innerText = currentTitle;
-    }
+    this.confirmSaveModal.toggleLoader();
 
     this.elem.name = currentTitle;
 
@@ -310,6 +318,7 @@ export default class TodoList {
     childNode.append(wrapperLoader);
 
     return this.dataController.doer.updateList({ id: this.id, name: currentTitle }).then(() => {
+      this.confirmSaveModal.close();
       this.contentNode.querySelector('.bread_crumbs').querySelector('span').innerText = `/${this.elem.name}`;
       wrapperLoader.remove()
     });
@@ -330,12 +339,37 @@ export default class TodoList {
     return this.contentNode.append(newWrapper);
   }
 
-  deleteList() {
-    loading(true);
+  deleteList = () => {
+    this.confirmDeleteModal.buttons = [
+      {
+        title: deleteModal.okTitle,
+        callback: this.onDeleteList,
+        type: typesButton.success,
+      },
+      {
+        title: deleteModal.cancelTitle,
+        callback: this.confirmDeleteModal.close,
+        type: typesButton.danger,
+      }
+    ];
 
-    this.dataController.doer.deleteList(this.elem.id).then(() => {
+    this.confirmDeleteModal.renderModal();
+  }
+
+  onDeleteList = () => {
+    this.confirmDeleteModal.toggleLoader();
+
+    new Promise((resolve) => {
+      setTimeout(resolve, 500)
+    }).then(() => {
+      this.confirmDeleteModal.close();
+
       loading(true);
-      location.href = '/';
+
+      this.dataController.doer.deleteList(this.elem.id).then(() => {
+        loading(true);
+        location.href = '/';
+      });
     });
   }
 
@@ -420,17 +454,49 @@ export default class TodoList {
     }
 
     const examplesCurrentTask = this.examplesTasks[index];
-    const currentNode = examplesCurrentTask.node;
 
-    examplesCurrentTask.loaded = true;
+    if (examplesCurrentTask.text.length > maxCharsDeleteWithoutModal) {
+      this.confirmDeleteModal.buttons = [
+        {
+          title: deleteModal.okTitle,
+          callback: () => {
+            this.deleteTaskQuery(examplesCurrentTask);
+            this.confirmDeleteModal.toggleLoader();
+          },
+          type: typesButton.success,
+        },
+        {
+          title: deleteModal.cancelTitle,
+          callback: this.confirmDeleteModal.close,
+          type: typesButton.danger,
+        }
+      ];
 
-    const newNode = examplesCurrentTask.getNode();
+      this.confirmDeleteModal.renderModal();
+
+      return true;
+    }
+
+    this.deleteTaskQuery(examplesCurrentTask);
+  }
+
+  deleteTaskQuery = (example) => {
+    const currentNode = example.node;
+
+    example.loaded = true;
+
+    const newNode = example.getNode();
 
     currentNode.replaceWith(newNode);
 
     this.query = this.query.then(() => {
-      this.dataController.doer.deleteTask(id).then(() => {
-        index = this.tasks.findIndex((item) => item.id === id);
+      this.dataController.doer.deleteTask(example.id).then(() => {
+        if (this.confirmDeleteModal) {
+          this.confirmDeleteModal.close();
+        }
+
+        const index = this.tasks.findIndex((item) => item.id === example.id);
+
         this.tasks.splice(index, 1);
         this.examplesTasks[index].node.remove();
         delete this.examplesTasks[index];
@@ -515,15 +581,20 @@ export default class TodoList {
 
         currentNode.replaceWith(newNode);
 
-        this.tasks[index].id = idNewTask;
+        this.tasks[index].id = idNewTask.id;
         this.tasks[index].text = task.text;
-        this.examplesTasks[index].updateDataTask({
-          id: idNewTask,
-          text: task.text,
-          done: false,
-          edit: false,
-        });
+        examplesCurrentTask.id = idNewTask.id;
+        examplesCurrentTask.text = task.text;
+        examplesCurrentTask.done = false;
+        examplesCurrentTask.edit = false;
+
+        const oldNode = this.examplesTasks[index].node;
+
+        const newNodeTask = this.examplesTasks[index].getNode();
+        oldNode.replaceWith(newNodeTask);
       });
+
+      return true;
     }
 
     const index = this.tasks.findIndex((item) => item.id === task.id);
@@ -549,41 +620,86 @@ export default class TodoList {
 
       dataCurrentTask.edit = false;
       exampleCurrentTask.edit = false;
+      exampleCurrentTask.text = task.text;
 
       const newNode = exampleCurrentTask.getNode();
 
       return oldNode.replaceWith(newNode);
     }
 
-    const currentNode = exampleCurrentTask.node;
+    this.confirmSaveModal.buttons = [
+      {
+        title: saveModal.saveTitle,
+        callback: () => this.updateTaskQuery(exampleCurrentTask),
+        type: typesButton.success,
+      },
+      {
+        title: saveModal.backEditTitle,
+        callback: () => {
+          exampleCurrentTask.setFocus();
+          this.confirmSaveModal.close();
+        },
+        type: typesButton.primary,
+      },
+      {
+        title: deleteModal.cancelTitle,
+        callback: () => this.cancelChangeTask(exampleCurrentTask, dataCurrentTask),
+        type: typesButton.danger,
+      }
+    ];
 
-    exampleCurrentTask.loaded = true;
-    exampleCurrentTask.edit = false;
+    this.confirmSaveModal.renderModal();
+  }
 
-    const newNodeLoaded = exampleCurrentTask.getNode();
+  cancelChangeTask = (example, data) => {
+    const oldNode = example.node;
+
+    data.edit = false;
+    example.edit = false;
+    example.text = data.text;
+
+    const newNode = example.getNode();
+
+    oldNode.replaceWith(newNode);
+    this.confirmSaveModal.close();
+  }
+
+  updateTaskQuery = (example) => {
+    if (example.text === '') {
+      return this.deleteTask(example.id);
+    }
+
+    this.confirmSaveModal.toggleLoader();
+
+    const currentNode = example.node;
+
+    example.loaded = true;
+    example.edit = false;
+
+    const newNodeLoaded = example.getNode();
 
     currentNode.replaceWith(newNodeLoaded);
 
-    if (task.text === '') {
-      return this.deleteTask(task.id);
-    }
-
     this.dataController.doer.updateTask({
-      ...task,
+      id: example.id,
+      text: example.text,
       done: false,
     }).then(() => {
-      const oldNode = exampleCurrentTask.node;
+      const oldNode = example.node;
+      const index = this.tasks.findIndex((item) => item.id === example.id);
+      const dataCurrentTask = this.tasks[index];
 
       dataCurrentTask.edit = false;
       dataCurrentTask.done = false;
-      dataCurrentTask.text = task.text;
-      exampleCurrentTask.edit = false;
-      exampleCurrentTask.done = false;
-      exampleCurrentTask.loaded = false;
+      dataCurrentTask.text = example.text;
+      example.edit = false;
+      example.done = false;
+      example.loaded = false;
 
-      const newNode = exampleCurrentTask.getNode();
+      const newNode = example.getNode();
 
       oldNode.replaceWith(newNode);
+      this.confirmSaveModal.close();
     });
   }
 }
